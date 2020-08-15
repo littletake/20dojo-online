@@ -193,8 +193,9 @@ paths:
           required: true
           schema:
             type: string
-        - name: rank
+        - name: start
           in: query
+          description: 開始順位
           required: true
           schema:
             type: integer
