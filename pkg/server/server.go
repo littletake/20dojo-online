@@ -11,11 +11,12 @@ import (
 func Serve(addr string) {
 
 	/* ===== URLマッピングを行う ===== */
+	http.HandleFunc("/setting/get", get(handler.HandleSettingGet()))
 	http.HandleFunc("/user/create", post(handler.HandleUserCreate()))
 
 	// TODO: 認証を行うmiddlewareを追加する
 	// middlewareは 20dojo-online/pkg/http/middleware パッケージを利用する
-	http.Handle("/user/get",
+	http.HandleFunc("/user/get",
 		get(handler.HandleUserGet()))
 	http.HandleFunc("/user/update",
 		post(handler.HandleUserUpdate()))

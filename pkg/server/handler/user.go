@@ -54,7 +54,7 @@ func HandleUserCreate() http.HandlerFunc {
 		}
 
 		// 生成した認証トークンを返却
-		response.Success(writer, userCreateResponse{Token: authToken.String()})
+		response.Success(writer, &userCreateResponse{Token: authToken.String()})
 	}
 }
 
@@ -94,7 +94,7 @@ func HandleUserGet() http.HandlerFunc {
 		}
 
 		// レスポンスに必要な情報を詰めて返却
-		response.Success(writer, userGetResponse{
+		response.Success(writer, &userGetResponse{
 			ID:        user.ID,
 			Name:      user.Name,
 			HighScore: user.HighScore,
