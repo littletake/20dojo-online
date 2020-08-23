@@ -21,12 +21,12 @@ func Authenticate(nextFunc http.HandlerFunc) http.HandlerFunc {
 
 		// リクエストヘッダからx-token(認証トークン)を取得
 		token := request.Header.Get("x-token")
-		if len(token) == 0 {
+		if token == "" {
 			log.Println("x-token is empty")
 			return
 		}
 
-		// データベースから認証トークンに紐づくユーザの情報を取得
+		// TODO: データベースから認証トークンに紐づくユーザの情報を取得
 		user, err := model.SelectUserByAuthToken(token)
 		if err != nil {
 			log.Println(err)

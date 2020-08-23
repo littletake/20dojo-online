@@ -8,6 +8,9 @@ import (
 
 // Success HTTPコード:200 正常終了を処理する
 func Success(writer http.ResponseWriter, response interface{}) {
+	if response == nil {
+		return
+	}
 	data, err := json.Marshal(response)
 	if err != nil {
 		log.Println(err)

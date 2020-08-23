@@ -148,7 +148,7 @@ func HandleUserUpdate() http.HandlerFunc {
 			return
 		}
 
-		response.Success(writer, "")
+		response.Success(writer, nil)
 	}
 }
 
