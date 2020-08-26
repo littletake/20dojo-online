@@ -1,0 +1,4 @@
+{
+  // go
+  "go.formatFlags": ["-local", "20dojo-online/pkg"]
+}
