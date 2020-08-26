@@ -61,6 +61,12 @@ func HandleGameFinish() http.HandlerFunc {
 		// TODO: coinの計算式を考える
 		// 現状: coin = score
 		tempCoin := requestBody.Score
+		// scoreが負の場合
+		if tempCoin < 0 {
+			log.Println(errors.New("score is a negative number"))
+			response.BadRequest(writer, fmt.Sprintf("score is a negative number."))
+			return
+		}
 
 		// 所持コインの計算
 		user.Coin += tempCoin
@@ -79,7 +85,5 @@ func HandleGameFinish() http.HandlerFunc {
 		response.Success(writer, &gameFinishResponse{
 			Coin: tempCoin,
 		})
-		response.Success(writer, nil)
-
 	}
 }
