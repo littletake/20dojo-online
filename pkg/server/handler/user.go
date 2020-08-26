@@ -1,9 +1,6 @@
 package handler
 
 import (
-	"20dojo-online/pkg/dcontext"
-	"20dojo-online/pkg/http/response"
-	"20dojo-online/pkg/server/model"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -11,6 +8,10 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
+
+	"20dojo-online/pkg/dcontext"
+	"20dojo-online/pkg/http/response"
+	"20dojo-online/pkg/server/model"
 )
 
 // TODO: エラー処理を簡潔に．

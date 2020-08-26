@@ -1,10 +1,11 @@
 package server
 
 import (
-	"20dojo-online/pkg/http/middleware"
-	"20dojo-online/pkg/server/handler"
 	"log"
 	"net/http"
+
+	"20dojo-online/pkg/http/middleware"
+	"20dojo-online/pkg/server/handler"
 )
 
 // Serve HTTPサーバを起動する

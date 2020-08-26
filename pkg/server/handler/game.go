@@ -1,14 +1,15 @@
 package handler
 
 import (
-	"20dojo-online/pkg/dcontext"
-	"20dojo-online/pkg/http/response"
-	"20dojo-online/pkg/server/model"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
 	"net/http"
+
+	"20dojo-online/pkg/dcontext"
+	"20dojo-online/pkg/http/response"
+	"20dojo-online/pkg/server/model"
 )
 
 type gameFinishRequest struct {

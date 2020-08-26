@@ -1,9 +1,10 @@
 package model
 
 import (
-	"20dojo-online/pkg/db"
 	"database/sql"
 	"log"
+
+	"20dojo-online/pkg/db"
 )
 
 // User userテーブルデータ
