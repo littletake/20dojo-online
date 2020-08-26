@@ -1,11 +1,10 @@
 package server
 
 import (
-	"log"
-	"net/http"
-
 	"20dojo-online/pkg/http/middleware"
 	"20dojo-online/pkg/server/handler"
+	"log"
+	"net/http"
 )
 
 // Serve HTTPサーバを起動する
@@ -15,15 +14,17 @@ func Serve(addr string) {
 	http.HandleFunc("/setting/get", get(handler.HandleSettingGet()))
 	http.HandleFunc("/user/create", post(handler.HandleUserCreate()))
 
-	// TODO: 認証を行うmiddlewareを追加する
-	// middlewareは 20dojo-online/pkg/http/middleware パッケージを利用する
-
-	// どこかで認証処理をする必要がある
-	//  -> http/auth.goで書いてある
+	// 認証を行うmiddlewareを追加する
+	//  -> http/middleware/auth.go
 	http.HandleFunc("/user/get",
 		get(middleware.Authenticate(handler.HandleUserGet())))
 	http.HandleFunc("/user/update",
 		post(middleware.Authenticate(handler.HandleUserUpdate())))
+
+	// インゲーム終了処理
+	// ユーザ情報を扱うので認証の必要あり
+	http.HandleFunc("/game/finish",
+		post(middleware.Authenticate(handler.HandleGameFinish())))
 
 	/* ===== サーバの起動 ===== */
 	log.Println("Server running...")

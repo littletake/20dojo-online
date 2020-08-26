@@ -1,10 +1,9 @@
 package model
 
 import (
+	"20dojo-online/pkg/db"
 	"database/sql"
 	"log"
-
-	"20dojo-online/pkg/db"
 )
 
 // User userテーブルデータ
@@ -29,26 +28,27 @@ func InsertUser(record *User) error {
 
 // SelectUserByAuthToken auth_tokenを条件にレコードを取得する
 func SelectUserByAuthToken(authToken string) (*User, error) {
-	// TODO: auth_tokenを条件にSELECTを行うSQLを第1引数に入力する
+	// auth_tokenを条件にSELECTを行うSQLを第1引数に入力する
 	row := db.Conn.QueryRow("SELECT * FROM user WHERE auth_token = ?", authToken)
 	return convertToUser(row)
 }
 
 // SelectUserByPrimaryKey 主キーを条件にレコードを取得する
 func SelectUserByPrimaryKey(userID string) (*User, error) {
-	// TODO: idを条件にSELECTを行うSQLを第1引数に入力する
+	// idを条件にSELECTを行うSQLを第1引数に入力する
 	row := db.Conn.QueryRow("SELECT * FROM user WHERE id = ?", userID)
 	return convertToUser(row)
 }
 
 // UpdateUserByPrimaryKey 主キーを条件にレコードを更新する
 func UpdateUserByPrimaryKey(record *User) error {
-	// TODO: idを条件に指定した値でnameカラムの値を更新するSQLを入力する
-	stmt, err := db.Conn.Prepare("UPDATE user SET name = ? WHERE id = ?")
+	// idを条件に指定した値で以下の値を更新するSQLを入力する
+	// 更新カラム: name, coin, high_score
+	stmt, err := db.Conn.Prepare("UPDATE user SET name = ?, coin = ?, high_score = ? WHERE id = ?")
 	if err != nil {
 		return err
 	}
-	_, err = stmt.Exec(record.Name, record.ID)
+	_, err = stmt.Exec(record.Name, record.Coin, record.HighScore, record.ID)
 	return err
 }
 

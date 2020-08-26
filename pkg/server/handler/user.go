@@ -1,6 +1,9 @@
 package handler
 
 import (
+	"20dojo-online/pkg/dcontext"
+	"20dojo-online/pkg/http/response"
+	"20dojo-online/pkg/server/model"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -8,11 +11,29 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
-
-	"20dojo-online/pkg/dcontext"
-	"20dojo-online/pkg/http/response"
-	"20dojo-online/pkg/server/model"
 )
+
+// TODO: エラー処理を簡潔に．
+// 毎回同じ処理をコピペしているのはよくない
+
+type userCreateRequest struct {
+	Name string `json:"name"`
+}
+
+type userUpdateRequest struct {
+	Name string `json:"name"`
+}
+
+type userCreateResponse struct {
+	Token string `json:"token"`
+}
+
+type userGetResponse struct {
+	ID        string `json:"id"`
+	Name      string `json:"name"`
+	HighScore int32  `json:"highScore"`
+	Coin      int32  `json:"coin"`
+}
 
 // HandleUserCreate ユーザ情報作成処理
 func HandleUserCreate() http.HandlerFunc {
@@ -20,7 +41,10 @@ func HandleUserCreate() http.HandlerFunc {
 
 		// リクエストBodyから更新後情報を取得
 		var requestBody userCreateRequest
-		json.NewDecoder(request.Body).Decode(&requestBody)
+		if err := json.NewDecoder(request.Body).Decode(&requestBody); err != nil {
+			log.Println(err)
+			response.InternalServerError(writer, "Internal Server Error")
+		}
 
 		// UUIDでユーザIDを生成する
 		userID, err := uuid.NewRandom()
@@ -39,7 +63,8 @@ func HandleUserCreate() http.HandlerFunc {
 		}
 
 		// データベースにユーザデータを登録する
-		// TODO: ユーザデータの登録クエリを入力する
+		// ユーザデータの登録クエリを入力する
+		// TODO: 既存ユーザが存在していた場合の処理を考えるべき？？（現状，重複登録になる）
 		err = model.InsertUser(&model.User{
 			ID:        userID.String(),
 			AuthToken: authToken.String(),
@@ -58,14 +83,6 @@ func HandleUserCreate() http.HandlerFunc {
 	}
 }
 
-type userCreateRequest struct {
-	Name string `json:"name"`
-}
-
-type userCreateResponse struct {
-	Token string `json:"token"`
-}
-
 // HandleUserGet ユーザ情報取得処理
 func HandleUserGet() http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
@@ -79,12 +96,8 @@ func HandleUserGet() http.HandlerFunc {
 			return
 		}
 
-		// TODO: ユーザデータの取得処理を実装
+		// ユーザデータの取得処理を実装
 		// server/user/modelに書かれている
-		// var user *model.User
-		// var err error
-		// user, err = model.SelectUserByPrimaryKey(userID)
-		// 一緒にやると以下のようになる
 		user, err := model.SelectUserByPrimaryKey(userID)
 		if err != nil {
 			log.Println(err)
@@ -107,21 +120,16 @@ func HandleUserGet() http.HandlerFunc {
 	}
 }
 
-type userGetResponse struct {
-	ID        string `json:"id"`
-	Name      string `json:"name"`
-	HighScore int32  `json:"highScore"`
-	Coin      int32  `json:"coin"`
-}
-
 // HandleUserUpdate ユーザ情報更新処理
 func HandleUserUpdate() http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 
 		// リクエストBodyから更新後情報を取得
-		// user/createと同じ処理
 		var requestBody userUpdateRequest
-		json.NewDecoder(request.Body).Decode(&requestBody)
+		if err := json.NewDecoder(request.Body).Decode(&requestBody); err != nil {
+			log.Println(err)
+			response.InternalServerError(writer, "Internal Server Error")
+		}
 
 		// Contextから認証済みのユーザIDを取得
 		ctx := request.Context()
@@ -132,9 +140,7 @@ func HandleUserUpdate() http.HandlerFunc {
 			return
 		}
 
-		// TODO: ユーザデータの取得処理と存在チェックを実装
-		// var user *model.User
-		// var err error
+		// ユーザデータの取得処理と存在チェックを実装
 		user, err := model.SelectUserByPrimaryKey(userID)
 		if err != nil {
 			log.Println(err)
@@ -147,7 +153,7 @@ func HandleUserUpdate() http.HandlerFunc {
 			return
 		}
 
-		// TODO: userテーブルの更新処理を実装
+		// userテーブルの更新処理を実装
 		user.Name = requestBody.Name
 		err = model.UpdateUserByPrimaryKey(user)
 		if err != nil {
@@ -158,8 +164,4 @@ func HandleUserUpdate() http.HandlerFunc {
 
 		response.Success(writer, nil)
 	}
-}
-
-type userUpdateRequest struct {
-	Name string `json:"name"`
 }

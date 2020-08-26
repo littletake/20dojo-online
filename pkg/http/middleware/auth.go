@@ -11,6 +11,7 @@ import (
 )
 
 // Authenticate ユーザ認証を行ってContextへユーザID情報を保存する
+// TODO: この関数はHandlerFuncのラッパー？？
 func Authenticate(nextFunc http.HandlerFunc) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 
@@ -26,7 +27,7 @@ func Authenticate(nextFunc http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		// TODO: データベースから認証トークンに紐づくユーザの情報を取得
+		// データベースから認証トークンに紐づくユーザの情報を取得
 		user, err := model.SelectUserByAuthToken(token)
 		if err != nil {
 			log.Println(err)
@@ -42,7 +43,7 @@ func Authenticate(nextFunc http.HandlerFunc) http.HandlerFunc {
 		// ユーザIDをContextへ保存して以降の処理に利用する
 		ctx = dcontext.SetUserID(ctx, user.ID)
 
-		// 次の処理
+		// 認証を通過して，引数に書いた処理が実行
 		nextFunc(writer, request.WithContext(ctx))
 	}
 }
