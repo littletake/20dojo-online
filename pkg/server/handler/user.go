@@ -80,8 +80,12 @@ func HandleUserGet() http.HandlerFunc {
 		}
 
 		// TODO: ユーザデータの取得処理を実装
-		var user *model.User
-		var err error
+		// server/user/modelに書かれている
+		// var user *model.User
+		// var err error
+		// user, err = model.SelectUserByPrimaryKey(userID)
+		// 一緒にやると以下のようになる
+		user, err := model.SelectUserByPrimaryKey(userID)
 		if err != nil {
 			log.Println(err)
 			response.InternalServerError(writer, "Internal Server Error")
@@ -115,6 +119,7 @@ func HandleUserUpdate() http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 
 		// リクエストBodyから更新後情報を取得
+		// user/createと同じ処理
 		var requestBody userUpdateRequest
 		json.NewDecoder(request.Body).Decode(&requestBody)
 
@@ -128,8 +133,9 @@ func HandleUserUpdate() http.HandlerFunc {
 		}
 
 		// TODO: ユーザデータの取得処理と存在チェックを実装
-		var user *model.User
-		var err error
+		// var user *model.User
+		// var err error
+		user, err := model.SelectUserByPrimaryKey(userID)
 		if err != nil {
 			log.Println(err)
 			response.InternalServerError(writer, "Internal Server Error")
@@ -142,6 +148,8 @@ func HandleUserUpdate() http.HandlerFunc {
 		}
 
 		// TODO: userテーブルの更新処理を実装
+		user.Name = requestBody.Name
+		err = model.UpdateUserByPrimaryKey(user)
 		if err != nil {
 			log.Println(err)
 			response.InternalServerError(writer, "Internal Server Error")

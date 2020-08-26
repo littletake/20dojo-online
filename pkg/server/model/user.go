@@ -18,8 +18,8 @@ type User struct {
 
 // InsertUser データベースをレコードを登録する
 func InsertUser(record *User) error {
-	// TODO: usersテーブルへのレコードの登録を行うSQLを入力する
-	stmt, err := db.Conn.Prepare("")
+	// userテーブルへのレコードの登録を行うSQLを入力する
+	stmt, err := db.Conn.Prepare("INSERT INTO user (id, auth_token, name, high_score, coin) VALUES (?, ?, ?, ?, ?)")
 	if err != nil {
 		return err
 	}
@@ -30,21 +30,21 @@ func InsertUser(record *User) error {
 // SelectUserByAuthToken auth_tokenを条件にレコードを取得する
 func SelectUserByAuthToken(authToken string) (*User, error) {
 	// TODO: auth_tokenを条件にSELECTを行うSQLを第1引数に入力する
-	row := db.Conn.QueryRow("", authToken)
+	row := db.Conn.QueryRow("SELECT * FROM user WHERE auth_token = ?", authToken)
 	return convertToUser(row)
 }
 
 // SelectUserByPrimaryKey 主キーを条件にレコードを取得する
 func SelectUserByPrimaryKey(userID string) (*User, error) {
 	// TODO: idを条件にSELECTを行うSQLを第1引数に入力する
-	row := db.Conn.QueryRow("", userID)
+	row := db.Conn.QueryRow("SELECT * FROM user WHERE id = ?", userID)
 	return convertToUser(row)
 }
 
 // UpdateUserByPrimaryKey 主キーを条件にレコードを更新する
 func UpdateUserByPrimaryKey(record *User) error {
 	// TODO: idを条件に指定した値でnameカラムの値を更新するSQLを入力する
-	stmt, err := db.Conn.Prepare("")
+	stmt, err := db.Conn.Prepare("UPDATE user SET name = ? WHERE id = ?")
 	if err != nil {
 		return err
 	}

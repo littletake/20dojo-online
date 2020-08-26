@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 
+	"20dojo-online/pkg/http/middleware"
 	"20dojo-online/pkg/server/handler"
 )
 
@@ -16,10 +17,13 @@ func Serve(addr string) {
 
 	// TODO: 認証を行うmiddlewareを追加する
 	// middlewareは 20dojo-online/pkg/http/middleware パッケージを利用する
+
+	// どこかで認証処理をする必要がある
+	//  -> http/auth.goで書いてある
 	http.HandleFunc("/user/get",
-		get(handler.HandleUserGet()))
+		get(middleware.Authenticate(handler.HandleUserGet())))
 	http.HandleFunc("/user/update",
-		post(handler.HandleUserUpdate()))
+		post(middleware.Authenticate(handler.HandleUserUpdate())))
 
 	/* ===== サーバの起動 ===== */
 	log.Println("Server running...")
@@ -45,7 +49,7 @@ func httpMethod(apiFunc http.HandlerFunc, method string) http.HandlerFunc {
 
 		// CORS対応
 		writer.Header().Add("Access-Control-Allow-Origin", "*")
-		writer.Header().Add("Access-Control-Allow-Headers", "Content-Type,Accept,Origin,X-API-TOKEN")
+		writer.Header().Add("Access-Control-Allow-Headers", "Content-Type,Accept,Origin,x-token")
 
 		// プリフライトリクエストは処理を通さない
 		if request.Method == http.MethodOptions {
