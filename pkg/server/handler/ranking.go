@@ -20,7 +20,7 @@ type Rank struct {
 }
 
 type rankingListResponse struct {
-	Ranks interface{} `json:"ranks"`
+	Ranks []Rank `json:"ranks"`
 }
 
 // HandleRankingList ランキング情報取得

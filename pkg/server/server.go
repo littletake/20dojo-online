@@ -31,6 +31,10 @@ func Serve(addr string) {
 	http.HandleFunc("/ranking/list",
 		get(middleware.Authenticate(handler.HandleRankingList())))
 
+	// ガチャ実行
+	http.HandleFunc("/gacha/draw",
+		post(middleware.Authenticate(handler.HandleGachaDraw())))
+
 	/* ===== サーバの起動 ===== */
 	log.Println("Server running...")
 	err := http.ListenAndServe(addr, nil)
