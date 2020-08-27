@@ -7,17 +7,24 @@ import (
 	"net/http"
 	"strconv"
 
-	"20dojo-online/pkg/server/model"
-
 	"20dojo-online/pkg/http/response"
+	"20dojo-online/pkg/server/model"
 )
+
+// Rank rankデータ
+type Rank struct {
+	UserID   string `json:"userId"`
+	UserName string `json:"userName"`
+	RankNum  int32  `json:"rank"`
+	Score    int32  `json:"score"`
+}
 
 type rankingListResponse struct {
 	Ranks interface{} `json:"ranks"`
 }
 
-// HandleRankingListGet ランキング情報取得
-func HandleRankingListGet() http.HandlerFunc {
+// HandleRankingList ランキング情報取得
+func HandleRankingList() http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		// クエリ取得
 		query := request.URL.Query()
@@ -37,19 +44,30 @@ func HandleRankingListGet() http.HandlerFunc {
 			response.BadRequest(writer, fmt.Sprintf("query'start' must be positive"))
 			return
 		}
-		rankList, err := model.SelectUsersByHighScore(startNum)
+		users, err := model.SelectUsersByHighScore(startNum)
 		if err != nil {
 			log.Println(err)
 			response.InternalServerError(writer, "Internal Server Error")
 			return
 		}
-		// TODO: [fix]順位範囲外の処理
-		if len(rankList) == 0 {
+		// TODO: 順位範囲外の処理
+		if len(users) == 0 {
 			log.Println(errors.New("user not found"))
 			response.BadRequest(writer, fmt.Sprintf("user not found. rank=%d", startNum))
 			return
 		}
-		response.Success(writer, &rankingListResponse{Ranks: rankList})
+
+		rankingList := make([]Rank, len(users), len(users))
+		for i, user := range users {
+			rankingList[i] = Rank{
+				UserID:   user.ID,
+				UserName: user.Name,
+				RankNum:  int32(startNum + i),
+				Score:    user.HighScore,
+			}
+		}
+
+		response.Success(writer, &rankingListResponse{Ranks: rankingList})
 	}
 
 }

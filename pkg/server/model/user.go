@@ -17,16 +17,10 @@ type User struct {
 	Coin      int32
 }
 
-// Rank rankデータ
-type Rank struct {
-	ID      string `json:"userId"`
-	Name    string `json:"userName"`
-	RankNum int32  `json:"rank"`
-	Score   int32  `json:"score"`
-}
+// Users Userの複数形
+type Users []*User
 
-// DBアクセス後にエラーハンドリングを追加する
-// convertToUser()でハンドリングしていた!!
+// TODO: DBアクセス後にエラーハンドリングを追加する
 
 // InsertUser データベースにレコードを登録する
 func InsertUser(record *User) error {
@@ -54,11 +48,10 @@ func SelectUserByPrimaryKey(userID string) (*User, error) {
 }
 
 // SelectUsersByHighScore high_scoreを基準に降順にしたレコードを取得
-// TODO: 戻り値を見直す
-func SelectUsersByHighScore(start int) ([]Rank, error) {
+func SelectUsersByHighScore(start int) (Users, error) {
 	// 任意の順位(start)からRankingListNumber分取得
-	rows, err := db.Conn.Query("SELECT * FROM user ORDER BY high_score DESC limit ? offset ?", constant.RankingListNumber, start-1)
-	// TODO: check error_handling
+	rows, err := db.Conn.Query("SELECT * FROM user ORDER BY high_score DESC LIMIT ? OFFSET ?", constant.RankingListNumber, start-1)
+	// TODO: 意味をしっかり理解してエラー処理を書く
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
@@ -66,29 +59,7 @@ func SelectUsersByHighScore(start int) ([]Rank, error) {
 		log.Println(err)
 		return nil, err
 	}
-	// TODO: 複数取得を別関数にする
-	ranks := []Rank{}
-	i := int32(1)
-	for rows.Next() {
-		user := User{}
-		err := rows.Scan(&user.ID, &user.AuthToken, &user.Name, &user.HighScore, &user.Coin)
-		if err != nil {
-			if err == sql.ErrNoRows {
-				return nil, nil
-			}
-			log.Println(err)
-			return nil, err
-		}
-		rank := Rank{
-			ID:      user.ID,
-			Name:    user.Name,
-			RankNum: i,
-			Score:   user.HighScore,
-		}
-		ranks = append(ranks, rank)
-		i++
-	}
-	return ranks, nil
+	return convertToUsers(rows)
 }
 
 // UpdateUserByPrimaryKey 主キーを条件にレコードを更新する
@@ -117,4 +88,20 @@ func convertToUser(row *sql.Row) (*User, error) {
 	return &user, nil
 }
 
-//
+// convertToUsers rowsデータをUsersデータへ変換する
+func convertToUsers(rows *sql.Rows) (Users, error) {
+	users := Users{}
+	for rows.Next() {
+		user := User{}
+		err := rows.Scan(&user.ID, &user.AuthToken, &user.Name, &user.HighScore, &user.Coin)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				return nil, nil
+			}
+			log.Println(err)
+			return nil, err
+		}
+		users = append(users, &user)
+	}
+	return users, nil
+}

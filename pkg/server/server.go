@@ -29,7 +29,7 @@ func Serve(addr string) {
 
 	// ランキング情報取得
 	http.HandleFunc("/ranking/list",
-		get(middleware.Authenticate(handler.HandleRankingListGet())))
+		get(middleware.Authenticate(handler.HandleRankingList())))
 
 	/* ===== サーバの起動 ===== */
 	log.Println("Server running...")
