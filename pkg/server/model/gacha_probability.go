@@ -13,23 +13,22 @@ type GachaProb struct {
 	Ratio            int32
 }
 
-// GachaProbList GachaProbの複数形
-type GachaProbList []*GachaProb
+// GachaProbSlice GachaProbの複数形
+type GachaProbSlice []*GachaProb
 
 // SelectAllGachaProb table:Gacha_probabilityの全件取得
-// TODO: 未確認
-func SelectAllGachaProb() (GachaProbList, error) {
+func SelectAllGachaProb() (GachaProbSlice, error) {
 	rows, err := db.Conn.Query("SELECT * FROM gacha_probability")
 	if err != nil {
 		log.Println(err)
 		return nil, err
 	}
-	return convertToGachaProbList(rows)
+	return convertToGachaProbSlice(rows)
 }
 
-// convertToGachaProbList rowsデータをGachaProbListデータへ変換する
-func convertToGachaProbList(rows *sql.Rows) (GachaProbList, error) {
-	gachaProbList := GachaProbList{}
+// convertToGachaProbSlice rowsデータをGachaProbSliceデータへ変換する
+func convertToGachaProbSlice(rows *sql.Rows) (GachaProbSlice, error) {
+	gachaProbSlice := GachaProbSlice{}
 	for rows.Next() {
 		gachaProb := GachaProb{}
 		err := rows.Scan(&gachaProb.CollectionItemID, &gachaProb.Ratio)
@@ -37,11 +36,11 @@ func convertToGachaProbList(rows *sql.Rows) (GachaProbList, error) {
 			log.Println(err)
 			return nil, err
 		}
-		gachaProbList = append(gachaProbList, &gachaProb)
+		gachaProbSlice = append(gachaProbSlice, &gachaProb)
 	}
 	if err := rows.Err(); err != nil {
 		log.Println(err)
 		return nil, err
 	}
-	return gachaProbList, nil
+	return gachaProbSlice, nil
 }

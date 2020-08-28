@@ -141,7 +141,7 @@ func HandleGachaDraw() http.HandlerFunc {
 
 		// アイテムの照合
 		// TODO: アイテムの保存
-		resultSlice := make([]GachaResult, gachaTimes)
+		gachaResultSlice := make([]GachaResult, gachaTimes)
 		var newItemSlice model.UserCollectionItemSlice
 
 		// TODO: テスト作成
@@ -158,7 +158,7 @@ func HandleGachaDraw() http.HandlerFunc {
 							Rarity:       item.Rarity,
 							IsNew:        false,
 						}
-						resultSlice[i] = result
+						gachaResultSlice[i] = result
 					} else {
 						result := GachaResult{
 							CollectionID: item.ItemID,
@@ -166,7 +166,7 @@ func HandleGachaDraw() http.HandlerFunc {
 							Rarity:       item.Rarity,
 							IsNew:        true,
 						}
-						resultSlice[i] = result
+						gachaResultSlice[i] = result
 						// 当ガチャで同一のアイテムがあるかの確認
 						hasCollectionItemMap[item.ItemID] = true
 						// 登録
@@ -197,8 +197,7 @@ func HandleGachaDraw() http.HandlerFunc {
 			return
 		}
 		// TODO: トランザクションをはる
-
-		response.Success(writer, &GachaDrawResponse{Results: resultSlice})
+		response.Success(writer, &GachaDrawResponse{Results: gachaResultSlice})
 	}
 }
 
@@ -228,49 +227,3 @@ func hasGot(index int32, gettingItemSlice []string) bool {
 	}
 	return flag
 }
-
-// // TODO: 関数の命名
-// func hasItem(itemID string, userCollectionItemSlice *model.userCollectionItemSlice) bool {
-// 	flag := false
-// 	i := 0
-// 	for {
-// 		if userCollectionItemSlice[i].CollectionItemID == itemID {
-// 			flag = true
-// 			break
-// 		}
-// 		i++
-// 	}
-// 	return flag
-// }
-
-// // detactItem アイテムの照合
-// // TODO: numberの型注意
-// func detectItem(number string, collectionItem interface) *GachaResult{
-// 	// TODO: 引数の修正
-// 	for _, item  := range collectionItem {
-// 		if item.ItemID == number {
-// 			result := GachaResult(
-// 				CollectionID: item.ItemID,
-// 				ItemName: item.ItemName,
-// 				Rarity:       item.Rarity,
-// 				IsNew:        false,
-// 			)}}
-// 	return &result
-// }
-
-// // DrawGacha ガチャ実行
-// func DrawGacha() {
-// 	gachaProbSlice, err := model.SelectAllGachaProb()
-// 	if err != nil {
-// 		log.Println(err)
-// 		response.InternalServerError(writer, "Internal Server Error")
-// 		return
-// 	}
-// 	// TODO: 訂正エラーメッセージ
-// 	if len(gachaProbSlice) == 0 {
-// 		log.Println(errors.New("error"))
-// 		response.BadRequest(writer, fmt.Sprintf("error"))
-// 		return
-// 	}
-
-// }
