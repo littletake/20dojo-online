@@ -17,23 +17,27 @@ import (
 // TODO: エラー処理を簡潔に．
 // 毎回同じ処理をコピペしているのはよくない
 
-type userCreateRequest struct {
+// UserCreateRequest ユーザ作成request
+type UserCreateRequest struct {
 	Name string `json:"name"`
 }
 
-type userUpdateRequest struct {
-	Name string `json:"name"`
-}
-
-type userCreateResponse struct {
+// UserCreateResponse ユーザ作成response
+type UserCreateResponse struct {
 	Token string `json:"token"`
 }
 
-type userGetResponse struct {
+// UserGetResponse ユーザ取得response
+type UserGetResponse struct {
 	ID        string `json:"id"`
 	Name      string `json:"name"`
 	HighScore int32  `json:"highScore"`
 	Coin      int32  `json:"coin"`
+}
+
+// UserUpdateRequest ユーザ更新request
+type UserUpdateRequest struct {
+	Name string `json:"name"`
 }
 
 // HandleUserCreate ユーザ情報作成処理
@@ -41,7 +45,7 @@ func HandleUserCreate() http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 
 		// リクエストBodyから更新後情報を取得
-		var requestBody userCreateRequest
+		var requestBody UserCreateRequest
 		if err := json.NewDecoder(request.Body).Decode(&requestBody); err != nil {
 			log.Println(err)
 			response.InternalServerError(writer, "Internal Server Error")
@@ -80,7 +84,7 @@ func HandleUserCreate() http.HandlerFunc {
 		}
 
 		// 生成した認証トークンを返却
-		response.Success(writer, &userCreateResponse{Token: authToken.String()})
+		response.Success(writer, &UserCreateResponse{Token: authToken.String()})
 	}
 }
 
@@ -112,7 +116,7 @@ func HandleUserGet() http.HandlerFunc {
 		}
 
 		// レスポンスに必要な情報を詰めて返却
-		response.Success(writer, &userGetResponse{
+		response.Success(writer, &UserGetResponse{
 			ID:        user.ID,
 			Name:      user.Name,
 			HighScore: user.HighScore,
@@ -126,7 +130,7 @@ func HandleUserUpdate() http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 
 		// リクエストBodyから更新後情報を取得
-		var requestBody userUpdateRequest
+		var requestBody UserUpdateRequest
 		if err := json.NewDecoder(request.Body).Decode(&requestBody); err != nil {
 			log.Println(err)
 			response.InternalServerError(writer, "Internal Server Error")

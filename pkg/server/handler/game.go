@@ -12,10 +12,13 @@ import (
 	"20dojo-online/pkg/server/model"
 )
 
-type gameFinishRequest struct {
+// GameFinishRequest ゲーム終了request
+type GameFinishRequest struct {
 	Score int32 `json:"score"`
 }
-type gameFinishResponse struct {
+
+// GameFinishResponse ゲーム終了response
+type GameFinishResponse struct {
 	Coin int32 `json:"coin"`
 }
 
@@ -27,7 +30,7 @@ type gameFinishResponse struct {
 func HandleGameFinish() http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		// リクエストBodyから更新後情報を取得
-		var requestBody gameFinishRequest
+		var requestBody GameFinishRequest
 		// Decodeの引数が&である理由: interfaceを引数にしているため
 		// error_handling: if err := ~; err != nil {}と書く
 		if err := json.NewDecoder(request.Body).Decode(&requestBody); err != nil {
@@ -82,7 +85,7 @@ func HandleGameFinish() http.HandlerFunc {
 			return
 		}
 		// レスポンスに必要な情報を詰めて返却
-		response.Success(writer, &gameFinishResponse{
+		response.Success(writer, &GameFinishResponse{
 			Coin: tempCoin,
 		})
 	}

@@ -20,17 +20,17 @@ type GachaDrawRequest struct {
 	Times int32 `json:"times"`
 }
 
-// Result レスポンス形式の中身
-type Result struct {
+// GachaDrawResponse レスポンス形式
+type GachaDrawResponse struct {
+	Results []GachaResult `json:"results"`
+}
+
+// GachaResult ガチャ結果
+type GachaResult struct {
 	CollectionID string `json:"collectionID"`
 	ItemName     string `json:"name"`
 	Rarity       int32  `json:"rarity"`
 	IsNew        bool   `json:"isNew"`
-}
-
-// GachaDrawResponse レスポンス形式
-type GachaDrawResponse struct {
-	Results []Result `json:"results"`
 }
 
 // HandleGachaDraw ガチャ実行
@@ -43,6 +43,7 @@ func HandleGachaDraw() http.HandlerFunc {
 			response.InternalServerError(writer, "Internal Server Error")
 			return
 		}
+		// gachaTimes ガチャの回数
 		gachaTimes := requestBody.Times
 		if gachaTimes != constant.MinGachaTimes {
 			if gachaTimes != constant.MaxGachaTimes {
@@ -82,21 +83,21 @@ func HandleGachaDraw() http.HandlerFunc {
 		}
 
 		// table:gacha_probabilityの全件取得
-		gachaProbList, err := model.SelectAllGachaProb()
+		gachaProbSlice, err := model.SelectAllGachaProb()
 		if err != nil {
 			log.Println(err)
 			response.InternalServerError(writer, "Internal Server Error")
 			return
 		}
 		// table:collection_itemの全件取得
-		collectionItemList, err := model.SelectAllCollectionItem()
+		collectionItemSlice, err := model.SelectAllCollectionItem()
 		if err != nil {
 			log.Println(err)
 			response.InternalServerError(writer, "Internal Server Error")
 			return
 		}
 		// userIDに適合したcollectionItemを取得
-		userCollectionItemList, err := model.SelectUserCollectionItemListByUserID(userID)
+		userCollectionItemSlice, err := model.SelectUserCollectionItemSliceByUserID(userID)
 		if err != nil {
 			log.Println(err)
 			response.InternalServerError(writer, "Internal Server Error")
@@ -107,7 +108,7 @@ func HandleGachaDraw() http.HandlerFunc {
 		// TODO: キャッシュで実現したい
 		// [注意] 一回のガチャで同じものがでた時に追加するので長さは指定しない
 		hasCollectionItemMap := make(map[string]bool)
-		for _, userCollectionItem := range userCollectionItemList {
+		for _, userCollectionItem := range userCollectionItemSlice {
 			itemID := userCollectionItem.CollectionItemID
 			hasCollectionItemMap[itemID] = true
 		}
@@ -116,56 +117,56 @@ func HandleGachaDraw() http.HandlerFunc {
 		// TODO: "data"の名称考える
 		data := []int32{}
 		count := int32(0)
-		for _, item := range gachaProbList {
+		for _, item := range gachaProbSlice {
 			count += item.Ratio
 			data = append(data, count)
 		}
 		// 乱数生成
 		// TODO: 乱数発生のseedも考える
 		rand.Seed(time.Now().UnixNano())
-		// gettingItemSlice 当てたアイテムのIDのlist
+		// gettingItemSlice 当てたアイテムのIDのslice
 		gettingItemSlice := make([]string, gachaTimes)
 		// TODO: [fix]for文の中
 		for i := int32(0); i < gachaTimes; i++ {
 			randomNum := rand.Int31n(data[len(data)-1])
 			index := detectNumber(randomNum, data)
-			gettingItemSlice[i] = collectionItemList[index].ItemID
+			gettingItemSlice[i] = collectionItemSlice[index].ItemID
 		}
 		// gettingItemMap := make(map[string]string, gachaTimes)
 		// for i := int32(0); i < gachaTimes; i++ {
 		// 	randomNum := rand.Int31n(data[len(data)-1])
 		// 	index := detectNumber(randomNum, data)
-		// 	gettingItemMap[i] = collectionItemList[index].ItemID
+		// 	gettingItemMap[i] = collectionItemSlice[index].ItemID
 		// }
 
 		// アイテムの照合
 		// TODO: アイテムの保存
-		resultList := make([]Result, gachaTimes)
-		var newItemList model.UserCollectionItemList
+		resultSlice := make([]GachaResult, gachaTimes)
+		var newItemSlice model.UserCollectionItemSlice
 
 		// TODO: テスト作成
 		for i := int32(0); i < gachaTimes; i++ {
-			for _, item := range collectionItemList {
+			for _, item := range collectionItemSlice {
 				// TODO: ここもmapの方が早いかも
 				if item.ItemID == gettingItemSlice[i] {
 					// 既出itemの確認
 					// fmt.Print(hasGot(i, gettingItemSlice))
 					if hasCollectionItemMap[item.ItemID] {
-						result := Result{
+						result := GachaResult{
 							CollectionID: item.ItemID,
 							ItemName:     item.ItemName,
 							Rarity:       item.Rarity,
 							IsNew:        false,
 						}
-						resultList[i] = result
+						resultSlice[i] = result
 					} else {
-						result := Result{
+						result := GachaResult{
 							CollectionID: item.ItemID,
 							ItemName:     item.ItemName,
 							Rarity:       item.Rarity,
 							IsNew:        true,
 						}
-						resultList[i] = result
+						resultSlice[i] = result
 						// 当ガチャで同一のアイテムがあるかの確認
 						hasCollectionItemMap[item.ItemID] = true
 						// 登録
@@ -173,14 +174,14 @@ func HandleGachaDraw() http.HandlerFunc {
 							UserID:           userID,
 							CollectionItemID: item.ItemID,
 						}
-						newItemList = append(newItemList, &newItem)
+						newItemSlice = append(newItemSlice, &newItem)
 					}
 				}
 			}
 		}
 
-		if len(newItemList) != 0 {
-			if err := model.BulkInsertUserCollectionItem(newItemList); err != nil {
+		if len(newItemSlice) != 0 {
+			if err := model.BulkInsertUserCollectionItem(newItemSlice); err != nil {
 				log.Println(err)
 				response.InternalServerError(writer, "Internal Server Error")
 				return
@@ -197,7 +198,7 @@ func HandleGachaDraw() http.HandlerFunc {
 		}
 		// TODO: トランザクションをはる
 
-		response.Success(writer, &GachaDrawResponse{Results: resultList})
+		response.Success(writer, &GachaDrawResponse{Results: resultSlice})
 	}
 }
 
@@ -229,11 +230,11 @@ func hasGot(index int32, gettingItemSlice []string) bool {
 }
 
 // // TODO: 関数の命名
-// func hasItem(itemID string, userCollectionItemList *model.UserCollectionItemList) bool {
+// func hasItem(itemID string, userCollectionItemSlice *model.userCollectionItemSlice) bool {
 // 	flag := false
 // 	i := 0
 // 	for {
-// 		if userCollectionItemList[i].CollectionItemID == itemID {
+// 		if userCollectionItemSlice[i].CollectionItemID == itemID {
 // 			flag = true
 // 			break
 // 		}
@@ -244,11 +245,11 @@ func hasGot(index int32, gettingItemSlice []string) bool {
 
 // // detactItem アイテムの照合
 // // TODO: numberの型注意
-// func detectItem(number string, collectionItem interface) *Result{
+// func detectItem(number string, collectionItem interface) *GachaResult{
 // 	// TODO: 引数の修正
 // 	for _, item  := range collectionItem {
 // 		if item.ItemID == number {
-// 			result := Result(
+// 			result := GachaResult(
 // 				CollectionID: item.ItemID,
 // 				ItemName: item.ItemName,
 // 				Rarity:       item.Rarity,
@@ -259,14 +260,14 @@ func hasGot(index int32, gettingItemSlice []string) bool {
 
 // // DrawGacha ガチャ実行
 // func DrawGacha() {
-// 	gachaProbList, err := model.SelectAllGachaProb()
+// 	gachaProbSlice, err := model.SelectAllGachaProb()
 // 	if err != nil {
 // 		log.Println(err)
 // 		response.InternalServerError(writer, "Internal Server Error")
 // 		return
 // 	}
 // 	// TODO: 訂正エラーメッセージ
-// 	if len(gachaProbList) == 0 {
+// 	if len(gachaProbSlice) == 0 {
 // 		log.Println(errors.New("error"))
 // 		response.BadRequest(writer, fmt.Sprintf("error"))
 // 		return

@@ -15,8 +15,8 @@ type UserCollectionItem struct {
 	CollectionItemID string
 }
 
-// UserCollectionItemList UserCollectionItemのlist
-type UserCollectionItemList []*UserCollectionItem
+// UserCollectionItemSlice UserCollectionItemのslice
+type UserCollectionItemSlice []*UserCollectionItem
 
 // InsertUserCollectionItem データベースにレコードを登録する
 func InsertUserCollectionItem(record *UserCollectionItem) error {
@@ -30,7 +30,7 @@ func InsertUserCollectionItem(record *UserCollectionItem) error {
 }
 
 // BulkInsertUserCollectionItem データベースに複数レコードを登録する
-func BulkInsertUserCollectionItem(records UserCollectionItemList) error {
+func BulkInsertUserCollectionItem(records UserCollectionItemSlice) error {
 	var queryString strings.Builder
 	queryString.WriteString("INSERT INTO user_collection_item (user_id, collection_item_id) VALUES ")
 	for i, record := range records {
@@ -59,23 +59,23 @@ func SelectUserCollectionItemByItemIDAndUserID(itemID string, userID string) (*U
 }
 
 // SelectAllUserCollectionItem table:user_collection_itemの全件取得
-func SelectAllUserCollectionItem() (UserCollectionItemList, error) {
+func SelectAllUserCollectionItem() (UserCollectionItemSlice, error) {
 	rows, err := db.Conn.Query("SELECT * FROM user_collection_item")
 	if err != nil {
 		log.Println(err)
 		return nil, err
 	}
-	return convertToUserCollectionItemList(rows)
+	return convertToUserCollectionItemSlice(rows)
 }
 
-// SelectUserCollectionItemListByUserID userIDを条件にレコードを取得する
-func SelectUserCollectionItemListByUserID(userID string) (UserCollectionItemList, error) {
+// SelectUserCollectionItemSliceByUserID userIDを条件にレコードを取得する
+func SelectUserCollectionItemSliceByUserID(userID string) (UserCollectionItemSlice, error) {
 	rows, err := db.Conn.Query("SELECT * FROM user_collection_item WHERE user_id = ?", userID)
 	if err != nil {
 		log.Println(err)
 		return nil, err
 	}
-	return convertToUserCollectionItemList(rows)
+	return convertToUserCollectionItemSlice(rows)
 }
 
 // convertToUserCollectionItem rowデータをUserCollectionItemデータへ変換する
@@ -92,9 +92,9 @@ func convertToUserCollectionItem(row *sql.Row) (*UserCollectionItem, error) {
 	return &userCollectionItem, nil
 }
 
-// convertToUserCollectionItemList rowsデータをUserCollectionItemListデータへ変換する
-func convertToUserCollectionItemList(rows *sql.Rows) (UserCollectionItemList, error) {
-	userCollectionItemList := UserCollectionItemList{}
+// convertToUserCollectionItemSlice rowsデータをUserCollectionItemSliceデータへ変換する
+func convertToUserCollectionItemSlice(rows *sql.Rows) (UserCollectionItemSlice, error) {
+	userCollectionItemSlice := UserCollectionItemSlice{}
 	for rows.Next() {
 		userCollectionItem := UserCollectionItem{}
 		err := rows.Scan(&userCollectionItem.UserID, &userCollectionItem.CollectionItemID)
@@ -102,11 +102,11 @@ func convertToUserCollectionItemList(rows *sql.Rows) (UserCollectionItemList, er
 			log.Println(err)
 			return nil, err
 		}
-		userCollectionItemList = append(userCollectionItemList, &userCollectionItem)
+		userCollectionItemSlice = append(userCollectionItemSlice, &userCollectionItem)
 	}
 	if err := rows.Err(); err != nil {
 		log.Println(err)
 		return nil, err
 	}
-	return userCollectionItemList, nil
+	return userCollectionItemSlice, nil
 }

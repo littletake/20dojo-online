@@ -14,8 +14,8 @@ type CollectionItem struct {
 	Rarity   int32
 }
 
-// CollectionItemList CollectionItemのslice
-type CollectionItemList []*CollectionItem
+// CollectionItemSlice CollectionItemのslice
+type CollectionItemSlice []*CollectionItem
 
 // SelectCollectionItemByItemID IDを条件にレコードを取得する
 func SelectCollectionItemByItemID(itemID string) (*CollectionItem, error) {
@@ -25,13 +25,13 @@ func SelectCollectionItemByItemID(itemID string) (*CollectionItem, error) {
 }
 
 // SelectAllCollectionItem table:collection_itemの全件取得
-func SelectAllCollectionItem() (CollectionItemList, error) {
+func SelectAllCollectionItem() (CollectionItemSlice, error) {
 	rows, err := db.Conn.Query("SELECT * FROM collection_item")
 	if err != nil {
 		log.Println(err)
 		return nil, err
 	}
-	return convertToCollectionItemList(rows)
+	return convertToCollectionItemSlice(rows)
 }
 
 // convertToCollectionItem rowデータをGachaItemデータへ変換する
@@ -48,9 +48,9 @@ func convertToCollectionItem(row *sql.Row) (*CollectionItem, error) {
 	return &collectionItem, nil
 }
 
-// convertToCollectionItemList rowsデータをCollectionItemListデータへ変換する
-func convertToCollectionItemList(rows *sql.Rows) (CollectionItemList, error) {
-	collectionItemList := CollectionItemList{}
+// convertToCollectionItemSlice rowsデータをCollectionItemSliceデータへ変換する
+func convertToCollectionItemSlice(rows *sql.Rows) (CollectionItemSlice, error) {
+	collectionItemSlice := CollectionItemSlice{}
 	for rows.Next() {
 		collectionItem := CollectionItem{}
 		err := rows.Scan(&collectionItem.ItemID, &collectionItem.ItemName, &collectionItem.Rarity)
@@ -58,11 +58,11 @@ func convertToCollectionItemList(rows *sql.Rows) (CollectionItemList, error) {
 			log.Println(err)
 			return nil, err
 		}
-		collectionItemList = append(collectionItemList, &collectionItem)
+		collectionItemSlice = append(collectionItemSlice, &collectionItem)
 	}
 	if err := rows.Err(); err != nil {
 		log.Println(err)
 		return nil, err
 	}
-	return collectionItemList, nil
+	return collectionItemSlice, nil
 }
