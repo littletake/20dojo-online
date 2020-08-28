@@ -21,9 +21,6 @@ type GachaProbList []*GachaProb
 func SelectAllGachaProb() (GachaProbList, error) {
 	rows, err := db.Conn.Query("SELECT * FROM gacha_probability")
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, nil
-		}
 		log.Println(err)
 		return nil, err
 	}
