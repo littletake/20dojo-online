@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"20dojo-online/pkg/constant"
+	"20dojo-online/pkg/db"
 	"20dojo-online/pkg/dcontext"
 	"20dojo-online/pkg/http/response"
 	"20dojo-online/pkg/server/model"
@@ -174,7 +175,30 @@ func HandleGachaDraw() http.HandlerFunc {
 				}
 			}
 		}
+		// TODO: トランザクションのテスト作成
+		// トランザクション開始
+		tx, err := db.Conn.Begin()
+		if err != nil {
+			log.Println(err)
+			response.InternalServerError(writer, "Internal Server Error")
+			return
+		}
 
+		// TODO: 書き方再検討すべき
+		defer func() {
+			if err := recover(); err != nil {
+				log.Println("panic happened")
+				log.Println(err)
+				if rollbackErr := tx.Rollback(); rollbackErr != nil {
+					log.Println("failed to Rollback")
+					log.Println(rollbackErr)
+					response.InternalServerError(writer, "Internal Server Error")
+					return
+				}
+			}
+		}()
+
+		// 1. バルクインサート
 		if len(newItemSlice) != 0 {
 			if err := model.BulkInsertUserCollectionItem(newItemSlice); err != nil {
 				log.Println(err)
@@ -182,8 +206,7 @@ func HandleGachaDraw() http.HandlerFunc {
 				return
 			}
 		}
-
-		// コインを消費
+		// 2. ユーザの保持コイン更新
 		user.Coin = user.Coin - constant.GachaCoinConsumption*gachaTimes
 		err = model.UpdateUserByPrimaryKey(user)
 		if err != nil {
@@ -191,7 +214,13 @@ func HandleGachaDraw() http.HandlerFunc {
 			response.InternalServerError(writer, "Internal Server Error")
 			return
 		}
-		// TODO: トランザクションをはる
+
+		if err := tx.Commit(); err != nil {
+			log.Println(err)
+			response.InternalServerError(writer, "Internal Server Error")
+			return
+		}
+
 		response.Success(writer, &GachaDrawResponse{
 			Results: gachaResultSlice,
 		})
