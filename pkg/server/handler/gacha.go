@@ -33,6 +33,11 @@ type GachaResult struct {
 	IsNew        bool   `json:"isNew"`
 }
 
+// init() 乱数のseed定義
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
+
 // HandleGachaDraw ガチャ実行
 func HandleGachaDraw() http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
@@ -47,7 +52,7 @@ func HandleGachaDraw() http.HandlerFunc {
 		gachaTimes := requestBody.Times
 		if gachaTimes != constant.MinGachaTimes {
 			if gachaTimes != constant.MaxGachaTimes {
-				log.Println(errors.New("query'times' must be 1 or 10"))
+				log.Println(errors.New("requestBody'times' must be 1 or 10"))
 				response.BadRequest(writer, fmt.Sprintf("requestBody'times' must be 1 or 10. times=%d", gachaTimes))
 				return
 			}
@@ -104,54 +109,44 @@ func HandleGachaDraw() http.HandlerFunc {
 			return
 		}
 
-		// ユーザが所持しているアイテムを示すmap
 		// TODO: キャッシュで実現したい
-		// [注意] 一回のガチャで同じものがでた時に追加するので長さは指定しない
-		hasCollectionItemMap := make(map[string]bool)
+		// hasGotItemMap ユーザが所持しているアイテムを示すmap
+		// [注意] ガチャ実行時も追加するので可変長指定
+		hasGotItemMap := make(map[string]bool)
 		for _, userCollectionItem := range userCollectionItemSlice {
 			itemID := userCollectionItem.CollectionItemID
-			hasCollectionItemMap[itemID] = true
+			hasGotItemMap[itemID] = true
 		}
 
-		// TODO: 一度だけ実行するようにする．redisで実装できればいい
-		// TODO: "data"の名称考える
-		data := []int32{}
+		// TODO: 初期化時に一度だけ実行したい．redisで実装??
+		// itemRatioSlice ratioを考慮したアイテム対応表
+		itemRatioSlice := make([]int32, len(gachaProbSlice))
 		count := int32(0)
-		for _, item := range gachaProbSlice {
+		for i, item := range gachaProbSlice {
 			count += item.Ratio
-			data = append(data, count)
+			itemRatioSlice[i] = count
 		}
-		// 乱数生成
-		// TODO: 乱数発生のseedも考える
-		rand.Seed(time.Now().UnixNano())
+
+		// 乱数によるガチャの実行
 		// gettingItemSlice 当てたアイテムのIDのslice
 		gettingItemSlice := make([]string, gachaTimes)
-		// TODO: [fix]for文の中
 		for i := int32(0); i < gachaTimes; i++ {
-			randomNum := rand.Int31n(data[len(data)-1])
-			index := detectNumber(randomNum, data)
+			randomNum := rand.Int31n(itemRatioSlice[len(itemRatioSlice)-1])
+			index := detectNumber(randomNum, itemRatioSlice)
 			gettingItemSlice[i] = collectionItemSlice[index].ItemID
 		}
-		// gettingItemMap := make(map[string]string, gachaTimes)
-		// for i := int32(0); i < gachaTimes; i++ {
-		// 	randomNum := rand.Int31n(data[len(data)-1])
-		// 	index := detectNumber(randomNum, data)
-		// 	gettingItemMap[i] = collectionItemSlice[index].ItemID
-		// }
 
 		// アイテムの照合
 		// TODO: アイテムの保存
 		gachaResultSlice := make([]GachaResult, gachaTimes)
-		var newItemSlice model.UserCollectionItemSlice
-
-		// TODO: テスト作成
+		var newItemSlice []*model.UserCollectionItem
 		for i := int32(0); i < gachaTimes; i++ {
 			for _, item := range collectionItemSlice {
-				// TODO: ここもmapの方が早いかも
+				// TODO: 全探索改善する
 				if item.ItemID == gettingItemSlice[i] {
 					// 既出itemの確認
 					// fmt.Print(hasGot(i, gettingItemSlice))
-					if hasCollectionItemMap[item.ItemID] {
+					if hasGotItemMap[item.ItemID] {
 						result := GachaResult{
 							CollectionID: item.ItemID,
 							ItemName:     item.ItemName,
@@ -168,7 +163,7 @@ func HandleGachaDraw() http.HandlerFunc {
 						}
 						gachaResultSlice[i] = result
 						// 当ガチャで同一のアイテムがあるかの確認
-						hasCollectionItemMap[item.ItemID] = true
+						hasGotItemMap[item.ItemID] = true
 						// 登録
 						newItem := model.UserCollectionItem{
 							UserID:           userID,
@@ -197,16 +192,18 @@ func HandleGachaDraw() http.HandlerFunc {
 			return
 		}
 		// TODO: トランザクションをはる
-		response.Success(writer, &GachaDrawResponse{Results: gachaResultSlice})
+		response.Success(writer, &GachaDrawResponse{
+			Results: gachaResultSlice,
+		})
 	}
 }
 
 // detectNumber 適している番号を見つける
-func detectNumber(random int32, data []int32) int32 {
+func detectNumber(random int32, itemRatioSlice []int32) int32 {
 	// TODO: 当たっているかどうかを判定する関数を作成すること
 	num := int32(0)
 	for {
-		if data[num] > random {
+		if itemRatioSlice[num] > random {
 			break
 		}
 		num++
