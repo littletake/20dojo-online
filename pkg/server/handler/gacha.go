@@ -42,6 +42,7 @@ func init() {
 // HandleGachaDraw ガチャ実行
 func HandleGachaDraw() http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
+		// 0. 前処理
 		// リクエストBodyから更新後情報を取得
 		var requestBody GachaDrawRequest
 		if err := json.NewDecoder(request.Body).Decode(&requestBody); err != nil {
@@ -58,7 +59,6 @@ func HandleGachaDraw() http.HandlerFunc {
 				return
 			}
 		}
-
 		// Contextから認証済みのユーザIDを取得
 		ctx := request.Context()
 		userID := dcontext.GetUserIDFromContext(ctx)
@@ -67,7 +67,6 @@ func HandleGachaDraw() http.HandlerFunc {
 			response.InternalServerError(writer, "Internal Server Error")
 			return
 		}
-
 		// ユーザデータの取得処理と存在チェックを実装
 		user, err := model.SelectUserByPrimaryKey(userID)
 		if err != nil {
@@ -80,14 +79,12 @@ func HandleGachaDraw() http.HandlerFunc {
 			response.BadRequest(writer, fmt.Sprintf("user not found. userID=%s", userID))
 			return
 		}
-
 		// 必要枚数分のコインがあるかどうかを判定
 		if user.Coin < constant.GachaCoinConsumption*gachaTimes {
 			log.Println(errors.New("user doesn't have enough coins"))
 			response.BadRequest(writer, fmt.Sprintf("user doesn't have enough coins. userID=%s, coin=%d", userID, user.Coin))
 			return
 		}
-
 		// table:gacha_probabilityの全件取得
 		gachaProbSlice, err := model.SelectAllGachaProb()
 		if err != nil {
@@ -109,7 +106,6 @@ func HandleGachaDraw() http.HandlerFunc {
 			response.InternalServerError(writer, "Internal Server Error")
 			return
 		}
-
 		// TODO: キャッシュで実現したい
 		// hasGotItemMap ユーザが所持しているアイテムを示すmap
 		// [注意] ガチャ実行時も追加するので可変長指定
@@ -118,7 +114,6 @@ func HandleGachaDraw() http.HandlerFunc {
 			itemID := userCollectionItem.CollectionItemID
 			hasGotItemMap[itemID] = true
 		}
-
 		// TODO: 初期化時に一度だけ実行したい．redisで実装??
 		// itemRatioSlice ratioを考慮したアイテム対応表
 		itemRatioSlice := make([]int32, len(gachaProbSlice))
@@ -128,7 +123,7 @@ func HandleGachaDraw() http.HandlerFunc {
 			itemRatioSlice[i] = count
 		}
 
-		// 乱数によるガチャの実行
+		// 1. 乱数によるガチャの実行
 		// gettingItemSlice 当てたアイテムのIDのslice
 		gettingItemSlice := make([]string, gachaTimes)
 		for i := int32(0); i < gachaTimes; i++ {
@@ -137,7 +132,7 @@ func HandleGachaDraw() http.HandlerFunc {
 			gettingItemSlice[i] = collectionItemSlice[index].ItemID
 		}
 
-		// アイテムの照合
+		// 2. アイテムの照合
 		// TODO: アイテムの保存
 		gachaResultSlice := make([]GachaResult, gachaTimes)
 		var newItemSlice []*model.UserCollectionItem
@@ -176,14 +171,13 @@ func HandleGachaDraw() http.HandlerFunc {
 			}
 		}
 		// TODO: トランザクションのテスト作成
-		// トランザクション開始
+		// 3. トランザクション開始（複数DB操作）
 		tx, err := db.Conn.Begin()
 		if err != nil {
 			log.Println(err)
 			response.InternalServerError(writer, "Internal Server Error")
 			return
 		}
-
 		// TODO: 書き方再検討すべき
 		defer func() {
 			if err := recover(); err != nil {
@@ -197,8 +191,7 @@ func HandleGachaDraw() http.HandlerFunc {
 				}
 			}
 		}()
-
-		// 1. バルクインサート
+		// 3-1. バルクインサート
 		if len(newItemSlice) != 0 {
 			if err := model.BulkInsertUserCollectionItem(newItemSlice); err != nil {
 				log.Println(err)
@@ -206,7 +199,7 @@ func HandleGachaDraw() http.HandlerFunc {
 				return
 			}
 		}
-		// 2. ユーザの保持コイン更新
+		// 3-2. ユーザの保持コイン更新
 		user.Coin = user.Coin - constant.GachaCoinConsumption*gachaTimes
 		err = model.UpdateUserByPrimaryKey(user)
 		if err != nil {
@@ -214,7 +207,6 @@ func HandleGachaDraw() http.HandlerFunc {
 			response.InternalServerError(writer, "Internal Server Error")
 			return
 		}
-
 		if err := tx.Commit(); err != nil {
 			log.Println(err)
 			response.InternalServerError(writer, "Internal Server Error")
