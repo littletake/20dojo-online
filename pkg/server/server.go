@@ -36,6 +36,10 @@ func Serve(addr string) {
 	http.HandleFunc("/gacha/draw",
 		post(middleware.Authenticate(handler.HandleGachaDraw())))
 
+	// コレクションアイテム一覧情報取得
+	http.HandleFunc("/collection/list",
+		get(middleware.Authenticate(handler.HandleCollectionList())))
+
 	// 初期化
 	// アイテム対応表の作成
 	if err := initializer.CreateItemRatioSliceOnce(); err != nil {
