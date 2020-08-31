@@ -17,13 +17,6 @@ type CollectionItem struct {
 // CollectionItemSlice CollectionItemのslice
 type CollectionItemSlice []*CollectionItem
 
-// SelectCollectionItemByItemID IDを条件にレコードを取得する
-func SelectCollectionItemByItemID(itemID string) (*CollectionItem, error) {
-	// idを条件にSELECTを行うSQLを第1引数に入力する
-	row := db.Conn.QueryRow("SELECT * FROM collection_item WHERE id = ?", itemID)
-	return convertToCollectionItem(row)
-}
-
 // SelectAllCollectionItem table:collection_itemの全件取得
 func SelectAllCollectionItem() (CollectionItemSlice, error) {
 	rows, err := db.Conn.Query("SELECT * FROM collection_item")

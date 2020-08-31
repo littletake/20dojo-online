@@ -35,10 +35,14 @@ func Serve(addr string) {
 	http.HandleFunc("/gacha/draw",
 		post(middleware.Authenticate(handler.HandleGachaDraw())))
 
+	// 初期化
+	if err := initi.createItemRatioSliceOnce(); err != nil {
+		log.Println(err)
+	}
+
 	/* ===== サーバの起動 ===== */
 	log.Println("Server running...")
-	err := http.ListenAndServe(addr, nil)
-	if err != nil {
+	if err := http.ListenAndServe(addr, nil); err != nil {
 		log.Fatalf("Listen and serve failed. %+v", err)
 	}
 }

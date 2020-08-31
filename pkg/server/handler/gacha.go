@@ -52,12 +52,10 @@ func HandleGachaDraw() http.HandlerFunc {
 		}
 		// gachaTimes ガチャの回数
 		gachaTimes := requestBody.Times
-		if gachaTimes != constant.MinGachaTimes {
-			if gachaTimes != constant.MaxGachaTimes {
-				log.Println(errors.New("requestBody'times' must be 1 or 10"))
-				response.BadRequest(writer, fmt.Sprintf("requestBody'times' must be 1 or 10. times=%d", gachaTimes))
-				return
-			}
+		if gachaTimes != constant.MinGachaTimes && gachaTimes != constant.MaxGachaTimes {
+			log.Println(errors.New("requestBody'times' must be 1 or 10"))
+			response.BadRequest(writer, fmt.Sprintf("requestBody'times' must be 1 or 10. times=%d", gachaTimes))
+			return
 		}
 		// Contextから認証済みのユーザIDを取得
 		ctx := request.Context()
@@ -80,11 +78,15 @@ func HandleGachaDraw() http.HandlerFunc {
 			return
 		}
 		// 必要枚数分のコインがあるかどうかを判定
-		if user.Coin < constant.GachaCoinConsumption*gachaTimes {
-			log.Println(errors.New("user doesn't have enough coins"))
-			response.BadRequest(writer, fmt.Sprintf("user doesn't have enough coins. userID=%s, coin=%d", userID, user.Coin))
+		necessaryCoins := constant.GachaCoinConsumption * gachaTimes
+		if user.Coin-necessaryCoins < 0 {
+			errMsg := fmt.Sprintf("user need at least %d coins. but you have %d coins.", necessaryCoins, user.Coin)
+			log.Println(errors.New(errMsg))
+			response.BadRequest(writer, fmt.Sprintf("you need at least %d coins but you have %d coins.", necessaryCoins, user.Coin))
 			return
 		}
+		user.Coin = user.Coin - necessaryCoins
+
 		// table:gacha_probabilityの全件取得
 		gachaProbSlice, err := model.SelectAllGachaProb()
 		if err != nil {
@@ -107,7 +109,7 @@ func HandleGachaDraw() http.HandlerFunc {
 			return
 		}
 		// TODO: キャッシュで実現したい
-		// hasGotItemMap ユーザが所持しているアイテムを示すmap
+		// hasGotItemMap 既出アイテム一覧map
 		// [注意] ガチャ実行時も追加するので可変長指定
 		hasGotItemMap := make(map[string]bool)
 		for _, userCollectionItem := range userCollectionItemSlice {
@@ -116,7 +118,8 @@ func HandleGachaDraw() http.HandlerFunc {
 		}
 		// TODO: 初期化時に一度だけ実行したい．redisで実装??
 		// itemRatioSlice ratioを考慮したアイテム対応表
-		itemRatioSlice := make([]int32, len(gachaProbSlice))
+		var itemRatioSlice []int32
+		itemRatioSlice = make([]int32, len(gachaProbSlice))
 		count := int32(0)
 		for i, item := range gachaProbSlice {
 			count += item.Ratio
@@ -136,12 +139,10 @@ func HandleGachaDraw() http.HandlerFunc {
 		// TODO: アイテムの保存
 		gachaResultSlice := make([]GachaResult, gachaTimes)
 		var newItemSlice []*model.UserCollectionItem
-		for i := int32(0); i < gachaTimes; i++ {
+		for i, gettingItem := range gettingItemSlice {
 			for _, item := range collectionItemSlice {
-				// TODO: 全探索改善する
-				if item.ItemID == gettingItemSlice[i] {
+				if gettingItem == item.ItemID {
 					// 既出itemの確認
-					// fmt.Print(hasGot(i, gettingItemSlice))
 					if hasGotItemMap[item.ItemID] {
 						result := GachaResult{
 							CollectionID: item.ItemID,
@@ -158,7 +159,7 @@ func HandleGachaDraw() http.HandlerFunc {
 							IsNew:        true,
 						}
 						gachaResultSlice[i] = result
-						// 当ガチャで同一のアイテムがあるかの確認
+						// 既出アイテム一覧に追加
 						hasGotItemMap[item.ItemID] = true
 						// 登録
 						newItem := model.UserCollectionItem{
@@ -187,7 +188,6 @@ func HandleGachaDraw() http.HandlerFunc {
 					log.Println("failed to Rollback")
 					log.Println(rollbackErr)
 					response.InternalServerError(writer, "Internal Server Error")
-					return
 				}
 			}
 		}()
@@ -201,8 +201,7 @@ func HandleGachaDraw() http.HandlerFunc {
 		}
 		// 3-2. ユーザの保持コイン更新
 		user.Coin = user.Coin - constant.GachaCoinConsumption*gachaTimes
-		err = model.UpdateUserByPrimaryKey(user)
-		if err != nil {
+		if err = model.UpdateUserByPrimaryKey(user); err != nil {
 			log.Println(err)
 			response.InternalServerError(writer, "Internal Server Error")
 			return
@@ -232,16 +231,16 @@ func detectNumber(random int32, itemRatioSlice []int32) int32 {
 	return num
 }
 
-// hasGot 一回のガチャで同じものがあるかを判定
-func hasGot(index int32, gettingItemSlice []string) bool {
-	flag := false
-	for i, gettingItem := range gettingItemSlice {
-		if int32(i) == index {
-			continue
-		}
-		if gettingItem == gettingItemSlice[index] {
-			flag = true
-		}
-	}
-	return flag
-}
+// // hasGot 一回のガチャで同じものがあるかを判定
+// func hasGot(index int32, gettingItemSlice []string) bool {
+// 	flag := false
+// 	for i, gettingItem := range gettingItemSlice {
+// 		if int32(i) == index {
+// 			continue
+// 		}
+// 		if gettingItem == gettingItemSlice[index] {
+// 			flag = true
+// 		}
+// 	}
+// 	return flag
+// }
