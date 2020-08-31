@@ -6,6 +6,7 @@ import (
 
 	"20dojo-online/pkg/http/middleware"
 	"20dojo-online/pkg/server/handler"
+	"20dojo-online/pkg/server/initializer"
 )
 
 // Serve HTTPサーバを起動する
@@ -36,7 +37,8 @@ func Serve(addr string) {
 		post(middleware.Authenticate(handler.HandleGachaDraw())))
 
 	// 初期化
-	if err := initi.createItemRatioSliceOnce(); err != nil {
+	// アイテム対応表の作成
+	if err := initializer.CreateItemRatioSliceOnce(); err != nil {
 		log.Println(err)
 	}
 

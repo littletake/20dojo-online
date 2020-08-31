@@ -13,6 +13,7 @@ import (
 	"20dojo-online/pkg/db"
 	"20dojo-online/pkg/dcontext"
 	"20dojo-online/pkg/http/response"
+	"20dojo-online/pkg/server/initializer"
 	"20dojo-online/pkg/server/model"
 )
 
@@ -53,8 +54,9 @@ func HandleGachaDraw() http.HandlerFunc {
 		// gachaTimes ガチャの回数
 		gachaTimes := requestBody.Times
 		if gachaTimes != constant.MinGachaTimes && gachaTimes != constant.MaxGachaTimes {
-			log.Println(errors.New("requestBody'times' must be 1 or 10"))
-			response.BadRequest(writer, fmt.Sprintf("requestBody'times' must be 1 or 10. times=%d", gachaTimes))
+			errMsg := fmt.Sprintf("requestBody'times' must be 1 or 10. times=%d", gachaTimes)
+			log.Println(errors.New(errMsg))
+			response.BadRequest(writer, errMsg)
 			return
 		}
 		// Contextから認証済みのユーザIDを取得
@@ -80,20 +82,13 @@ func HandleGachaDraw() http.HandlerFunc {
 		// 必要枚数分のコインがあるかどうかを判定
 		necessaryCoins := constant.GachaCoinConsumption * gachaTimes
 		if user.Coin-necessaryCoins < 0 {
-			errMsg := fmt.Sprintf("user need at least %d coins. but you have %d coins.", necessaryCoins, user.Coin)
+			errMsg := fmt.Sprintf("user doesn't have enough coins. current: %d, necessary: %d", user.Coin, necessaryCoins)
 			log.Println(errors.New(errMsg))
-			response.BadRequest(writer, fmt.Sprintf("you need at least %d coins but you have %d coins.", necessaryCoins, user.Coin))
+			response.BadRequest(writer, errMsg)
 			return
 		}
 		user.Coin = user.Coin - necessaryCoins
 
-		// table:gacha_probabilityの全件取得
-		gachaProbSlice, err := model.SelectAllGachaProb()
-		if err != nil {
-			log.Println(err)
-			response.InternalServerError(writer, "Internal Server Error")
-			return
-		}
 		// table:collection_itemの全件取得
 		collectionItemSlice, err := model.SelectAllCollectionItem()
 		if err != nil {
@@ -116,22 +111,14 @@ func HandleGachaDraw() http.HandlerFunc {
 			itemID := userCollectionItem.CollectionItemID
 			hasGotItemMap[itemID] = true
 		}
-		// TODO: 初期化時に一度だけ実行したい．redisで実装??
-		// itemRatioSlice ratioを考慮したアイテム対応表
-		var itemRatioSlice []int32
-		itemRatioSlice = make([]int32, len(gachaProbSlice))
-		count := int32(0)
-		for i, item := range gachaProbSlice {
-			count += item.Ratio
-			itemRatioSlice[i] = count
-		}
 
 		// 1. 乱数によるガチャの実行
+		// initializer.ItemRatioSlice ratioを使ったアイテム対応表
 		// gettingItemSlice 当てたアイテムのIDのslice
 		gettingItemSlice := make([]string, gachaTimes)
 		for i := int32(0); i < gachaTimes; i++ {
-			randomNum := rand.Int31n(itemRatioSlice[len(itemRatioSlice)-1])
-			index := detectNumber(randomNum, itemRatioSlice)
+			randomNum := rand.Int31n(initializer.ItemRatioSlice[len(initializer.ItemRatioSlice)-1])
+			index := detectNumber(randomNum)
 			gettingItemSlice[i] = collectionItemSlice[index].ItemID
 		}
 
@@ -182,13 +169,13 @@ func HandleGachaDraw() http.HandlerFunc {
 		// TODO: 書き方再検討すべき
 		defer func() {
 			if err := recover(); err != nil {
-				log.Println("panic happened")
-				log.Println(err)
+				log.Println("!! PANIC !!")
 				if rollbackErr := tx.Rollback(); rollbackErr != nil {
 					log.Println("failed to Rollback")
 					log.Println(rollbackErr)
 					response.InternalServerError(writer, "Internal Server Error")
 				}
+				panic(err)
 			}
 		}()
 		// 3-1. バルクインサート
@@ -219,11 +206,11 @@ func HandleGachaDraw() http.HandlerFunc {
 }
 
 // detectNumber 適している番号を見つける
-func detectNumber(random int32, itemRatioSlice []int32) int32 {
+func detectNumber(random int32) int32 {
 	// TODO: 当たっているかどうかを判定する関数を作成すること
 	num := int32(0)
 	for {
-		if itemRatioSlice[num] > random {
+		if initializer.ItemRatioSlice[num] > random {
 			break
 		}
 		num++
@@ -231,6 +218,7 @@ func detectNumber(random int32, itemRatioSlice []int32) int32 {
 	return num
 }
 
+// テスト関数作成までコメントアウト
 // // hasGot 一回のガチャで同じものがあるかを判定
 // func hasGot(index int32, gettingItemSlice []string) bool {
 // 	flag := false
