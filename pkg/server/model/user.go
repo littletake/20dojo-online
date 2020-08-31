@@ -59,11 +59,25 @@ func SelectUsersByHighScore(start int) (Users, error) {
 	return convertToUsers(rows)
 }
 
+// TODO: トランザクションありなしで関数を定義しているのでいい感じに一つにしたい．interfaceを使う?
+
 // UpdateUserByPrimaryKey 主キーを条件にレコードを更新する
 func UpdateUserByPrimaryKey(record *User) error {
 	// idを条件に指定した値で以下の値を更新するSQLを入力する
 	// 更新カラム: name, coin, high_score
 	stmt, err := db.Conn.Prepare("UPDATE user SET name = ?, coin = ?, high_score = ? WHERE id = ?")
+	if err != nil {
+		return err
+	}
+	_, err = stmt.Exec(record.Name, record.Coin, record.HighScore, record.ID)
+	return err
+}
+
+// UpdateUserByPrimaryKeyInTx 主キーを条件にレコードを更新する
+func UpdateUserByPrimaryKeyInTx(record *User, tx *sql.Tx) error {
+	// idを条件に指定した値で以下の値を更新するSQLを入力する
+	// 更新カラム: name, coin, high_score
+	stmt, err := tx.Prepare("UPDATE user SET name = ?, coin = ?, high_score = ? WHERE id = ?")
 	if err != nil {
 		return err
 	}
