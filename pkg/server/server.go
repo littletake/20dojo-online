@@ -6,6 +6,7 @@ import (
 
 	"20dojo-online/pkg/http/middleware"
 	"20dojo-online/pkg/server/handler"
+	"20dojo-online/pkg/server/initializer"
 )
 
 // Serve HTTPサーバを起動する
@@ -31,10 +32,19 @@ func Serve(addr string) {
 	http.HandleFunc("/ranking/list",
 		get(middleware.Authenticate(handler.HandleRankingList())))
 
+	// ガチャ実行
+	http.HandleFunc("/gacha/draw",
+		post(middleware.Authenticate(handler.HandleGachaDraw())))
+
+	// 初期化
+	// アイテム対応表の作成
+	if err := initializer.CreateItemRatioSliceOnce(); err != nil {
+		log.Println(err)
+	}
+
 	/* ===== サーバの起動 ===== */
 	log.Println("Server running...")
-	err := http.ListenAndServe(addr, nil)
-	if err != nil {
+	if err := http.ListenAndServe(addr, nil); err != nil {
 		log.Fatalf("Listen and serve failed. %+v", err)
 	}
 }

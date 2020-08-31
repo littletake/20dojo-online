@@ -53,9 +53,6 @@ func SelectUsersByHighScore(start int) (Users, error) {
 	rows, err := db.Conn.Query("SELECT * FROM user ORDER BY high_score DESC LIMIT ? OFFSET ?", constant.RankingListNumber, start-1)
 	// TODO: 意味をしっかり理解してエラー処理を書く
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, nil
-		}
 		log.Println(err)
 		return nil, err
 	}
@@ -102,6 +99,10 @@ func convertToUsers(rows *sql.Rows) (Users, error) {
 			return nil, err
 		}
 		users = append(users, &user)
+	}
+	if err := rows.Err(); err != nil {
+		log.Println(err)
+		return nil, err
 	}
 	return users, nil
 }

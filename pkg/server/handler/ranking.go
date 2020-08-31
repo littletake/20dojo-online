@@ -11,16 +11,17 @@ import (
 	"20dojo-online/pkg/server/model"
 )
 
-// Rank rankデータ
-type Rank struct {
-	UserID   string `json:"userId"`
-	UserName string `json:"userName"`
-	RankNum  int32  `json:"rank"`
-	Score    int32  `json:"score"`
+// RankingListResponse レスポンス形式
+type RankingListResponse struct {
+	Ranks []RankInfo `json:"ranks"`
 }
 
-type rankingListResponse struct {
-	Ranks []Rank `json:"ranks"`
+// RankInfo ランキング情報
+type RankInfo struct {
+	UserID   string `json:"userId"`
+	UserName string `json:"userName"`
+	Rank     int32  `json:"rank"`
+	Score    int32  `json:"score"`
 }
 
 // HandleRankingList ランキング情報取得
@@ -57,17 +58,17 @@ func HandleRankingList() http.HandlerFunc {
 			return
 		}
 
-		rankingList := make([]Rank, len(users), len(users))
+		rankingList := make([]RankInfo, len(users), len(users))
 		for i, user := range users {
-			rankingList[i] = Rank{
+			rankingList[i] = RankInfo{
 				UserID:   user.ID,
 				UserName: user.Name,
-				RankNum:  int32(startNum + i),
+				Rank:     int32(startNum + i),
 				Score:    user.HighScore,
 			}
 		}
 
-		response.Success(writer, &rankingListResponse{Ranks: rankingList})
+		response.Success(writer, &RankingListResponse{Ranks: rankingList})
 	}
 
 }
