@@ -8,7 +8,8 @@ import (
 
 // UserUseCase UserにおけるUseCaseのインターフェース
 type UserUseCase interface {
-	SelectUserByAuth(string) (model.UserD, error)
+	SelectUserLByuserID(string) (*model.UserL, error)
+	InsertUserL(*model.UserL) error
 }
 
 type userUseCase struct {
@@ -25,12 +26,19 @@ func NewUserUseCase(ur repository.UserRepository) UserUseCase {
 }
 
 // SelectUserByAuth Userデータを条件抽出するためのユースケース
-// ここで具体的に実装している？？
-func (uu userUseCase) SelectUserByAuth(auth string) (user model.UserD, err error) {
+func (uu userUseCase) SelectUserLByuserID(id string) (user *model.UserL, err error) {
 	// persistenceを呼び出す
-	user, err = uu.userRepository.SelectUserByAuth(auth)
+	user, err = uu.userRepository.SelectUserLByuserID(id)
 	if err != nil {
 		return nil, err
 	}
 	return user, nil
+}
+
+// InsertUserL Userデータを登録するためのユースケース
+func (uu userUseCase) InsertUserL(record *model.UserL) (err error) {
+	if err = uu.userRepository.InsertUserL(record); err != nil {
+		return err
+	}
+	return nil
 }

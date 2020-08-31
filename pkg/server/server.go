@@ -4,6 +4,9 @@ import (
 	"log"
 	"net/http"
 
+	"20dojo-online/pkg/server/infra/persistence"
+	"20dojo-online/pkg/server/usecase"
+
 	"20dojo-online/pkg/http/middleware"
 	"20dojo-online/pkg/server/handler"
 	"20dojo-online/pkg/server/initializer"
@@ -11,15 +14,20 @@ import (
 
 // Serve HTTPサーバを起動する
 func Serve(addr string) {
+	// レイヤードアーキテクチャ
+	userPersistence := persistence.NewUserPersistence()
+	userUseCase := usecase.NewUserUseCase(userPersistence)
+	userHandler := handler.NewUserHandler(userUseCase)
+	http.HandleFunc("/userL/get",
+		get(middleware.Authenticate(userHandler.HandleUserLGet)))
 
 	/* ===== URLマッピングを行う ===== */
 	http.HandleFunc("/setting/get", get(handler.HandleSettingGet()))
 	http.HandleFunc("/user/create", post(handler.HandleUserCreate()))
 
 	// 認証を行うmiddlewareを追加する
-	//  -> http/middleware/auth.go
-	http.HandleFunc("/user/get",
-		get(middleware.Authenticate(handler.HandleUserGet())))
+	// http.HandleFunc("/user/get",
+	// 	get(middleware.Authenticate(handler.HandleUserGet())))
 	http.HandleFunc("/user/update",
 		post(middleware.Authenticate(handler.HandleUserUpdate())))
 

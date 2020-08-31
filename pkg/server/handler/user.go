@@ -27,13 +27,13 @@ type UserCreateResponse struct {
 	Token string `json:"token"`
 }
 
-// UserGetResponse ユーザ取得response
-type UserGetResponse struct {
-	ID        string `json:"id"`
-	Name      string `json:"name"`
-	HighScore int32  `json:"highScore"`
-	Coin      int32  `json:"coin"`
-}
+// // UserGetResponse ユーザ取得response
+// type UserGetResponse struct {
+// 	ID        string `json:"id"`
+// 	Name      string `json:"name"`
+// 	HighScore int32  `json:"highScore"`
+// 	Coin      int32  `json:"coin"`
+// }
 
 // UserUpdateRequest ユーザ更新request
 type UserUpdateRequest struct {

@@ -1,6 +1,6 @@
 package model
 
-type UserD struct {
+type UserL struct {
 	ID        string
 	AuthToken string
 	Name      string

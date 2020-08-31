@@ -17,15 +17,26 @@ func NewUserPersistence() repository.UserRepository {
 	return &userPersistence{}
 }
 
-func (up userPersistence) SelectUserByAuth(auth string) (*model.UserD, error) {
+func (up userPersistence) SelectUserLByuserID(id string) (*model.UserL, error) {
 	// auth_tokenを条件にSELECTを行うSQLを第1引数に入力する
-	row := db.Conn.QueryRow("SELECT * FROM user WHERE auth_token = ?", auth)
+	row := db.Conn.QueryRow("SELECT * FROM user WHERE id = ?", id)
 	return convertToUser(row)
 }
 
+// InsertUser データベースにレコードを登録する
+func (up userPersistence) InsertUserL(record *model.UserL) error {
+	// userテーブルへのレコードの登録を行うSQLを入力する
+	stmt, err := db.Conn.Prepare("INSERT INTO user (id, auth_token, name, high_score, coin) VALUES (?, ?, ?, ?, ?)")
+	if err != nil {
+		return err
+	}
+	_, err = stmt.Exec(record.ID, record.AuthToken, record.Name, record.HighScore, record.Coin)
+	return err
+}
+
 // convertToUser rowデータをUserデータへ変換する
-func convertToUser(row *sql.Row) (*model.UserD, error) {
-	user := model.UserD{}
+func convertToUser(row *sql.Row) (*model.UserL, error) {
+	user := model.UserL{}
 	err := row.Scan(&user.ID, &user.AuthToken, &user.Name, &user.HighScore, &user.Coin)
 	if err != nil {
 		if err == sql.ErrNoRows {
