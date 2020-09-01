@@ -8,8 +8,9 @@ import (
 
 // UserUseCase UserにおけるUseCaseのインターフェース
 type UserUseCase interface {
-	SelectUserLByuserID(string) (*model.UserL, error)
+	SelectUserLByUserID(string) (*model.UserL, error)
 	InsertUserL(*model.UserL) error
+	UpdateUserLByUser(*model.UserL) error
 }
 
 type userUseCase struct {
@@ -26,9 +27,9 @@ func NewUserUseCase(ur repository.UserRepository) UserUseCase {
 }
 
 // SelectUserByAuth Userデータを条件抽出するためのユースケース
-func (uu userUseCase) SelectUserLByuserID(id string) (user *model.UserL, err error) {
+func (uu userUseCase) SelectUserLByUserID(id string) (user *model.UserL, err error) {
 	// persistenceを呼び出す
-	user, err = uu.userRepository.SelectUserLByuserID(id)
+	user, err = uu.userRepository.SelectUserLByUserID(id)
 	if err != nil {
 		return nil, err
 	}
@@ -38,6 +39,14 @@ func (uu userUseCase) SelectUserLByuserID(id string) (user *model.UserL, err err
 // InsertUserL Userデータを登録するためのユースケース
 func (uu userUseCase) InsertUserL(record *model.UserL) (err error) {
 	if err = uu.userRepository.InsertUserL(record); err != nil {
+		return err
+	}
+	return nil
+}
+
+// UpdateUserLByUser Userデータを更新するためのユースケース
+func (uu userUseCase) UpdateUserLByUser(record *model.UserL) (err error) {
+	if err = uu.userRepository.UpdateUserLByUser(record); err != nil {
 		return err
 	}
 	return nil

@@ -17,7 +17,7 @@ func NewUserPersistence() repository.UserRepository {
 	return &userPersistence{}
 }
 
-func (up userPersistence) SelectUserLByuserID(id string) (*model.UserL, error) {
+func (up userPersistence) SelectUserLByUserID(id string) (*model.UserL, error) {
 	// auth_tokenを条件にSELECTを行うSQLを第1引数に入力する
 	row := db.Conn.QueryRow("SELECT * FROM user WHERE id = ?", id)
 	return convertToUser(row)
@@ -31,6 +31,18 @@ func (up userPersistence) InsertUserL(record *model.UserL) error {
 		return err
 	}
 	_, err = stmt.Exec(record.ID, record.AuthToken, record.Name, record.HighScore, record.Coin)
+	return err
+}
+
+// UpdateUserByUser
+func (up userPersistence) UpdateUserLByUser(record *model.UserL) error {
+	// idを条件に指定した値で以下の値を更新するSQLを入力する
+	// 更新カラム: name, coin, high_score
+	stmt, err := db.Conn.Prepare("UPDATE user SET name = ?, coin = ?, high_score = ? WHERE id = ?")
+	if err != nil {
+		return err
+	}
+	_, err = stmt.Exec(record.Name, record.Coin, record.HighScore, record.ID)
 	return err
 }
 

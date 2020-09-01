@@ -18,8 +18,13 @@ func Serve(addr string) {
 	userPersistence := persistence.NewUserPersistence()
 	userUseCase := usecase.NewUserUseCase(userPersistence)
 	userHandler := handler.NewUserHandler(userUseCase)
+	// ユーザ情報取得
 	http.HandleFunc("/userL/get",
 		get(middleware.Authenticate(userHandler.HandleUserLGet)))
+	// ユーザ作成
+	http.HandleFunc("/userL/create", post(userHandler.HandleUserLCreate))
+	// ユーザ情報更新
+	http.HandleFunc("/userL/update", post(middleware.Authenticate(userHandler.HandleUserLUpdate)))
 
 	/* ===== URLマッピングを行う ===== */
 	http.HandleFunc("/setting/get", get(handler.HandleSettingGet()))
