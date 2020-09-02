@@ -23,23 +23,26 @@ func Serve(addr string) {
 		get(middleware.Authenticate(userHandler.HandleUserLGet)))
 	// ユーザ作成
 	http.HandleFunc("/userL/create", post(userHandler.HandleUserLCreate))
-	// ユーザ情報更新
-	http.HandleFunc("/userL/update", post(middleware.Authenticate(userHandler.HandleUserLUpdate)))
+	// // ユーザ情報更新
+	// http.HandleFunc("/userL/update",
+	// 	post(middleware.Authenticate(userHandler.HandleUserLUpdate)))
+	// // インゲーム終了
+	// http.HandleFunc("/game/finish",
+	// 	post(middleware.Authenticate(userHandler.HandleGameFinish)))
 
 	/* ===== URLマッピングを行う ===== */
 	http.HandleFunc("/setting/get", get(handler.HandleSettingGet()))
-	http.HandleFunc("/user/create", post(handler.HandleUserCreate()))
+	// http.HandleFunc("/user/create", post(handler.HandleUserCreate()))
 
 	// 認証を行うmiddlewareを追加する
 	// http.HandleFunc("/user/get",
 	// 	get(middleware.Authenticate(handler.HandleUserGet())))
-	http.HandleFunc("/user/update",
-		post(middleware.Authenticate(handler.HandleUserUpdate())))
+	// http.HandleFunc("/user/update",
+	// 	post(middleware.Authenticate(handler.HandleUserUpdate())))
 
-	// インゲーム終了処理
-	// ユーザ情報を扱うので認証の必要あり
-	http.HandleFunc("/game/finish",
-		post(middleware.Authenticate(handler.HandleGameFinish())))
+	// // インゲーム終了処理
+	// http.HandleFunc("/game/finish",
+	// 	post(middleware.Authenticate(handler.HandleGameFinish())))
 
 	// ランキング情報取得
 	http.HandleFunc("/ranking/list",
