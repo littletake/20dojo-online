@@ -158,6 +158,7 @@ func HandleGachaDraw() http.HandlerFunc {
 				}
 			}
 		}
+
 		// TODO: トランザクションのテスト作成
 		// 3. トランザクション開始（複数DB操作）
 		tx, err := db.Conn.Begin()
@@ -166,29 +167,30 @@ func HandleGachaDraw() http.HandlerFunc {
 			response.InternalServerError(writer, "Internal Server Error")
 			return
 		}
-		// TODO: 書き方再検討すべき
+		// TODO: 書き方再検討
 		defer func() {
 			if err := recover(); err != nil {
 				log.Println("!! PANIC !!")
+				log.Println(err)
 				if rollbackErr := tx.Rollback(); rollbackErr != nil {
 					log.Println("failed to Rollback")
 					log.Println(rollbackErr)
 					response.InternalServerError(writer, "Internal Server Error")
 				}
-				panic(err)
+				// TODO: ここにpanic()を書くとAPIが二回実行される
+				// panic(err)
 			}
 		}()
 		// 3-1. バルクインサート
 		if len(newItemSlice) != 0 {
-			if err := model.BulkInsertUserCollectionItem(newItemSlice); err != nil {
+			if err := model.BulkInsertUserCollectionItem(newItemSlice, tx); err != nil {
 				log.Println(err)
 				response.InternalServerError(writer, "Internal Server Error")
 				return
 			}
 		}
 		// 3-2. ユーザの保持コイン更新
-		user.Coin = user.Coin - constant.GachaCoinConsumption*gachaTimes
-		if err = model.UpdateUserByPrimaryKey(user); err != nil {
+		if err := model.UpdateUserByPrimaryKeyInTx(user, tx); err != nil {
 			log.Println(err)
 			response.InternalServerError(writer, "Internal Server Error")
 			return
@@ -218,7 +220,7 @@ func detectNumber(random int32) int32 {
 	return num
 }
 
-// テスト関数作成までコメントアウト
+// TODO: テスト関数作成までコメントアウトしています
 // // hasGot 一回のガチャで同じものがあるかを判定
 // func hasGot(index int32, gettingItemSlice []string) bool {
 // 	flag := false

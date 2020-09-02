@@ -29,8 +29,10 @@ func InsertUserCollectionItem(record *UserCollectionItem) error {
 	return err
 }
 
+// TODO: トランザクションを使わない場合も考慮して実装すること
+
 // BulkInsertUserCollectionItem データベースに複数レコードを登録する
-func BulkInsertUserCollectionItem(records UserCollectionItemSlice) error {
+func BulkInsertUserCollectionItem(records UserCollectionItemSlice, tx *sql.Tx) error {
 	var queryString strings.Builder
 	queryString.WriteString("INSERT INTO user_collection_item (user_id, collection_item_id) VALUES ")
 	for i, record := range records {
@@ -43,7 +45,7 @@ func BulkInsertUserCollectionItem(records UserCollectionItemSlice) error {
 			queryString.WriteString(", ")
 		}
 	}
-	stmt, err := db.Conn.Prepare(queryString.String())
+	stmt, err := tx.Prepare(queryString.String())
 	if err != nil {
 		return err
 	}
