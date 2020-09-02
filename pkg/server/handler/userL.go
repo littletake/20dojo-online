@@ -2,12 +2,12 @@ package handler
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/google/uuid"
+	"github.com/pkg/errors"
 
 	"20dojo-online/pkg/dcontext"
 	"20dojo-online/pkg/http/response"
@@ -22,6 +22,8 @@ type UserHandler interface {
 	HandleUserLUpdate(http.ResponseWriter, *http.Request)
 }
 
+// TODO: あまりわかっていない
+// userHandler usecaseとhandlerをつなぐもの
 type userHandler struct {
 	userUseCase usecase.UserUseCase
 }
@@ -35,17 +37,29 @@ func NewUserHandler(uu usecase.UserUseCase) UserHandler {
 
 // TODO: dcontext.GetUserIDFromContextと重複?
 
-// GetUserID Contextから認証済みのユーザIDを取得
-func GetUserID(writer http.ResponseWriter, request *http.Request) (userID string, err error) {
+// GetUser userの取得
+func GetUser(writer http.ResponseWriter, request *http.Request, uh userHandler) (user *model.UserL) {
+	// userID取得
 	ctx := request.Context()
-	userID = dcontext.GetUserIDFromContext(ctx)
+	userID := dcontext.GetUserIDFromContext(ctx)
 	if userID == "" {
-		return userID, errors.New("userID is empty")
-		// log.Println(errors.New("userID is empty"))
-		// response.InternalServerError(writer, "Internal Server Error")
-		// return
+		log.Println(errors.New("userID is empty"))
+		response.InternalServerError(writer, "Internal Server Error")
+		return
 	}
-	return userID, nil
+	// ユーザデータの取得処理と存在チェックを実装
+	user, err := uh.userUseCase.SelectUserLByUserID(userID)
+	if err != nil {
+		log.Println(err)
+		response.InternalServerError(writer, "Internal Server Error")
+		return
+	}
+	if user == nil {
+		log.Println(errors.New("user not found"))
+		response.BadRequest(writer, fmt.Sprintf("user not found. userID=%s", userID))
+		return
+	}
+	return user
 }
 
 // CreateUser ユーザ作成
@@ -64,7 +78,7 @@ func CreateUser(userName string) (user model.UserL, err error) {
 	return user, err
 }
 
-// HandleUserLGet
+// HandleUserLGet ユーザ情報取得のHandler
 func (uh userHandler) HandleUserLGet(writer http.ResponseWriter, request *http.Request) {
 	// userGetResponse ユーザ取得response
 	type userGetResponse struct {
@@ -73,26 +87,8 @@ func (uh userHandler) HandleUserLGet(writer http.ResponseWriter, request *http.R
 		HighScore int32  `json:"highScore"`
 		Coin      int32  `json:"coin"`
 	}
-	// userID取得
-	userID, err := GetUserID(writer, request)
-	if err != nil {
-		log.Println(err)
-		response.InternalServerError(writer, "Internal Server Error")
-		return
-	}
-	// ユースケースの呼び出し
-	// TODO: 切り出せるかも
-	user, err := uh.userUseCase.SelectUserLByUserID(userID)
-	if err != nil {
-		log.Println(err)
-		response.InternalServerError(writer, "Internal Server Error")
-		return
-	}
-	if user == nil {
-		log.Println(errors.New("user not found"))
-		response.BadRequest(writer, fmt.Sprintf("user not found. userID=%s", userID))
-		return
-	}
+	// user取得
+	user := GetUser(writer, request, uh)
 	// レスポンス
 	response.Success(writer, &userGetResponse{
 		ID:        user.ID,
@@ -113,11 +109,13 @@ func (uh userHandler) HandleUserLCreate(writer http.ResponseWriter, request *htt
 	type userCreateResponse struct {
 		Token string `json:"token"`
 	}
+
 	// リクエストBodyから更新後情報を取得
 	var requestBody userCreateRequest
 	if err := json.NewDecoder(request.Body).Decode(&requestBody); err != nil {
 		log.Println(err)
 		response.InternalServerError(writer, "Internal Server Error")
+		return
 	}
 	// データベースにユーザデータを登録する
 	user, err := CreateUser(requestBody.Name)
@@ -144,33 +142,20 @@ func (uh userHandler) HandleUserLUpdate(writer http.ResponseWriter, request *htt
 	type userUpdateRequest struct {
 		Name string `json:"name"`
 	}
-	// リクエストBodyから更新後情報を取得
+	// requestBodyから更新情報を取得
 	var requestBody userUpdateRequest
 	if err := json.NewDecoder(request.Body).Decode(&requestBody); err != nil {
 		log.Println(err)
 		response.InternalServerError(writer, "Internal Server Error")
-	}
-	// userID取得
-	userID, err := GetUserID(writer, request)
-	if err != nil {
-		log.Println(err)
-		response.InternalServerError(writer, "Internal Server Error")
-	}
-	// ユーザデータの取得処理と存在チェックを実装
-	user, err := uh.userUseCase.SelectUserLByUserID(userID)
-	if err != nil {
-		log.Println(err)
-		response.InternalServerError(writer, "Internal Server Error")
 		return
 	}
-	if user == nil {
-		log.Println(errors.New("user not found"))
-		response.BadRequest(writer, fmt.Sprintf("user not found. userID=%s", userID))
-		return
-	}
-	// userテーブルの更新処理を実装
+	// user取得
+	user := GetUser(writer, request, uh)
+	// user情報の更新
 	user.Name = requestBody.Name
-	if err = uh.userUseCase.UpdateUserLByUser(user); err != nil {
+
+	// user更新
+	if err := uh.userUseCase.UpdateUserLByUser(user); err != nil {
 		log.Println(err)
 		response.InternalServerError(writer, "Internal Server Error")
 		return

@@ -2,8 +2,11 @@ package middleware
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
+
+	"github.com/pkg/errors"
 
 	"20dojo-online/pkg/dcontext"
 	"20dojo-online/pkg/http/response"
@@ -35,7 +38,10 @@ func Authenticate(nextFunc http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 		if user == nil {
-			log.Printf("user not found. token=%s", token)
+			// TODO: pkg/errorsを使ったけど毎回これ書くのは大変
+			// -> なんとかすること
+			errMsg := errors.New(fmt.Sprintf("user not found. token=%s", token))
+			log.Printf("%+v\n", errMsg)
 			response.BadRequest(writer, "Invalid token")
 			return
 		}
