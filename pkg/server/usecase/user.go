@@ -12,17 +12,16 @@ import (
 
 // UserUseCase UserにおけるUseCaseのインターフェース
 type UserUseCase interface {
-	GetUserLByUserID(string) (*model.UserL, *model.MyErr)
-	RegisterUser(string) (string, *model.MyErr)
-	UpdateUserLByUser(*model.UserL) error
-	CreateMyErr(error, int32) *model.MyErr
+	CreateMyErr(errMsg error, errCode int32) (myErr *model.MyErr)
+	GetUserLByUserID(userID string) (user *model.UserL, myErr *model.MyErr)
+	RegisterUserFromUserName(userName string) (authToken string, myErr *model.MyErr)
+	UpdateUserName(userID string, userName string) (myErr *model.MyErr)
+	UpdateCoinAndHighScore(userID string, score int32) (coin int32, myErr *model.MyErr)
 }
 
 type userUseCase struct {
 	userRepository repository.UserRepository
 }
-
-// TODO: 返し方を考える
 
 // NewUserUseCase Userデータに関するUseCaseを生成
 func NewUserUseCase(ur repository.UserRepository) UserUseCase {
@@ -32,18 +31,18 @@ func NewUserUseCase(ur repository.UserRepository) UserUseCase {
 }
 
 // CreateMyErr MyErrの定義
-func (uu userUseCase) CreateMyErr(errMsg error, errCode int32) *model.MyErr {
-	myErr := &model.MyErr{
+func (uu userUseCase) CreateMyErr(errMsg error, errCode int32) (myErr *model.MyErr) {
+	myErr = &model.MyErr{
 		ErrMsg:  errMsg,
 		ErrCode: errCode,
 	}
 	return myErr
 }
 
-// GetUserByAuth Userデータを条件抽出するためのユースケース
-func (uu userUseCase) GetUserLByUserID(id string) (user *model.UserL, myErr *model.MyErr) {
+// GetUserByAuth Userデータを条件抽出
+func (uu userUseCase) GetUserLByUserID(userID string) (user *model.UserL, myErr *model.MyErr) {
 	// idと照合するユーザを取得
-	user, err := uu.userRepository.SelectUserLByUserID(id)
+	user, err := uu.userRepository.SelectUserLByUserID(userID)
 	if err != nil {
 		// TODO: こうやって使っていいのか？
 		myErr = uu.CreateMyErr(err, 500)
@@ -59,8 +58,8 @@ func (uu userUseCase) GetUserLByUserID(id string) (user *model.UserL, myErr *mod
 	return user, nil
 }
 
-// RegisterUser Userデータを登録するためのユースケース
-func (uu userUseCase) RegisterUser(userName string) (string, *model.MyErr) {
+// RegisterUserFromUserName Userデータを登録
+func (uu userUseCase) RegisterUserFromUserName(userName string) (authToken string, myErr *model.MyErr) {
 	// TODO: どのIDの生成でエラーが生じたのかをエラーメッセージに添付すること
 	// UUIDでユーザIDを生成する
 	userID, err := uuid.NewRandom()
@@ -69,7 +68,7 @@ func (uu userUseCase) RegisterUser(userName string) (string, *model.MyErr) {
 		return "", myErr
 	}
 	// UUIDで認証トークンを生成する
-	authToken, err := uuid.NewRandom()
+	token, err := uuid.NewRandom()
 	if err != nil {
 		myErr := uu.CreateMyErr(err, 500)
 		return "", myErr
@@ -77,23 +76,69 @@ func (uu userUseCase) RegisterUser(userName string) (string, *model.MyErr) {
 	// ユーザ作成
 	user := &model.UserL{
 		ID:        userID.String(),
-		AuthToken: authToken.String(),
+		AuthToken: token.String(),
 		Name:      userName,
 		HighScore: 0,
 		Coin:      0,
 	}
 	// ユーザ登録
 	if err = uu.userRepository.InsertUserL(user); err != nil {
-		myErr := uu.CreateMyErr(err, 500)
+		myErr = uu.CreateMyErr(err, 500)
 		return "", myErr
 	}
 	return user.AuthToken, nil
 }
 
-// UpdateUserLByUser Userデータを更新するためのユースケース
-func (uu userUseCase) UpdateUserLByUser(record *model.UserL) (err error) {
-	if err = uu.userRepository.UpdateUserLByUser(record); err != nil {
-		return err
+// UpdateUserName UserNameを更新
+func (uu userUseCase) UpdateUserName(userID string, userName string) (myErr *model.MyErr) {
+	// ユーザ取得
+	user, myErr := uu.GetUserLByUserID(userID)
+	if myErr != nil {
+		return myErr
+	}
+	// ユーザ更新
+	user.Name = userName
+	// 更新を保存
+	if err := uu.userRepository.UpdateUserLByUser(user); err != nil {
+		myErr := uu.CreateMyErr(
+			err,
+			500,
+		)
+		return myErr
 	}
 	return nil
+}
+
+// UpdateCoinAndHighScore CoinとScoreを更新
+func (uu userUseCase) UpdateCoinAndHighScore(userID string, score int32) (coin int32, myErr *model.MyErr) {
+	// coinとhighScoreを更新
+	if score < 0 {
+		myErr := uu.CreateMyErr(
+			fmt.Errorf("score must be positive. score=%d", score),
+			400,
+		)
+		return 0, myErr
+	}
+	// ユーザ取得
+	user, myErr := uu.GetUserLByUserID(userID)
+	if myErr != nil {
+		return 0, myErr
+	}
+	// コインに変換
+	coin = ChangeScoreToCoin(score)
+	// 所持コインの追加
+	user.Coin += coin
+	// ハイスコアの処理
+	if user.HighScore < score {
+		user.HighScore = score
+	}
+	// 更新を保存
+	if err := uu.userRepository.UpdateUserLByUser(user); err != nil {
+		myErr := uu.CreateMyErr(
+			err,
+			500,
+		)
+		return 0, myErr
+	}
+	return coin, nil
 }

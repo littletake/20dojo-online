@@ -23,12 +23,12 @@ func Serve(addr string) {
 		get(middleware.Authenticate(userHandler.HandleUserLGet)))
 	// ユーザ作成
 	http.HandleFunc("/userL/create", post(userHandler.HandleUserLCreate))
-	// // ユーザ情報更新
-	// http.HandleFunc("/userL/update",
-	// 	post(middleware.Authenticate(userHandler.HandleUserLUpdate)))
-	// // インゲーム終了
-	// http.HandleFunc("/game/finish",
-	// 	post(middleware.Authenticate(userHandler.HandleGameFinish)))
+	// ユーザ情報更新
+	http.HandleFunc("/userL/update",
+		post(middleware.Authenticate(userHandler.HandleUserLUpdate)))
+	// インゲーム終了
+	http.HandleFunc("/game/finish",
+		post(middleware.Authenticate(userHandler.HandleGameFinish)))
 
 	/* ===== URLマッピングを行う ===== */
 	http.HandleFunc("/setting/get", get(handler.HandleSettingGet()))

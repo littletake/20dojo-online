@@ -16,8 +16,8 @@ import (
 type UserHandler interface {
 	HandleUserLGet(http.ResponseWriter, *http.Request)
 	HandleUserLCreate(http.ResponseWriter, *http.Request)
-	// HandleUserLUpdate(http.ResponseWriter, *http.Request)
-	// HandleGameFinish(http.ResponseWriter, *http.Request)
+	HandleUserLUpdate(http.ResponseWriter, *http.Request)
+	HandleGameFinish(http.ResponseWriter, *http.Request)
 }
 
 // TODO: あまりわかっていない
@@ -51,7 +51,7 @@ func DoErr(writer http.ResponseWriter, myErr *model.MyErr) {
 
 }
 
-// HandleUserLGet ユーザ情報取得のHandler
+// HandleUserLGet ユーザ情報取得
 func (uh userHandler) HandleUserLGet(writer http.ResponseWriter, request *http.Request) {
 	// userGetResponse ユーザ取得response
 	type userGetResponse struct {
@@ -88,7 +88,7 @@ func (uh userHandler) HandleUserLGet(writer http.ResponseWriter, request *http.R
 
 }
 
-// HandleUserLCreate
+// HandleUserLCreate　ユーザ作成
 func (uh userHandler) HandleUserLCreate(writer http.ResponseWriter, request *http.Request) {
 	// userCreateRequest ユーザ作成request
 	type userCreateRequest struct {
@@ -110,7 +110,7 @@ func (uh userHandler) HandleUserLCreate(writer http.ResponseWriter, request *htt
 		return
 	}
 	// ユーザを登録
-	authToken, myErr := uh.userUseCase.RegisterUser(requestBody.Name)
+	authToken, myErr := uh.userUseCase.RegisterUserFromUserName(requestBody.Name)
 	if myErr != nil {
 		DoErr(writer, myErr)
 		return
@@ -122,71 +122,83 @@ func (uh userHandler) HandleUserLCreate(writer http.ResponseWriter, request *htt
 
 }
 
-// // HandleUserLUpdate
-// func (uh userHandler) HandleUserLUpdate(writer http.ResponseWriter, request *http.Request) {
-// 	// userUpdateRequest ユーザ更新request
-// 	type userUpdateRequest struct {
-// 		Name string `json:"name"`
-// 	}
+// HandleUserLUpdate　ユーザ情報更新
+func (uh userHandler) HandleUserLUpdate(writer http.ResponseWriter, request *http.Request) {
+	// userUpdateRequest ユーザ更新request
+	type userUpdateRequest struct {
+		Name string `json:"name"`
+	}
 
-// 	// requestBodyから更新情報を取得
-// 	var requestBody userUpdateRequest
-// 	if err := json.NewDecoder(request.Body).Decode(&requestBody); err != nil {
-// 		log.Println(err)
-// 		response.InternalServerError(writer, "Internal Server Error")
-// 		return
-// 	}
-// 	// user取得
-// 	user := GetUser(writer, request, uh)
-// 	// user情報の更新
-// 	user.Name = requestBody.Name
+	// コンテキストからuserID取得
+	ctx := request.Context()
+	userID := dcontext.GetUserIDFromContext(ctx)
+	if userID == "" {
+		myErr := uh.userUseCase.CreateMyErr(
+			fmt.Errorf("userID is empty"),
+			500,
+		)
+		DoErr(writer, myErr)
+		return
+	}
+	// requestBodyから更新情報を取得
+	var requestBody userUpdateRequest
+	if err := json.NewDecoder(request.Body).Decode(&requestBody); err != nil {
+		myErr := uh.userUseCase.CreateMyErr(
+			err,
+			500,
+		)
+		DoErr(writer, myErr)
+		return
+	}
+	// userNameを更新
+	myErr := uh.userUseCase.UpdateUserName(userID, requestBody.Name)
+	if myErr != nil {
+		DoErr(writer, myErr)
+		return
+	}
+	response.Success(writer, nil)
+}
 
-// 	// user更新
-// 	if err := uh.userUseCase.UpdateUserLByUser(user); err != nil {
-// 		log.Println(err)
-// 		response.InternalServerError(writer, "Internal Server Error")
-// 		return
-// 	}
-// 	response.Success(writer, nil)
-// }
+// HandleGameFinish インゲーム終了処理
+func (uh userHandler) HandleGameFinish(writer http.ResponseWriter, request *http.Request) {
+	// GameFinishRequest ゲーム終了request
+	type GameFinishRequest struct {
+		Score int32 `json:"score"`
+	}
+	// GameFinishResponse ゲーム終了response
+	type GameFinishResponse struct {
+		Coin int32 `json:"coin"`
+	}
 
-// // HandleGameFinish インゲーム終了処理
-// func (uh userHandler) HandleGameFinish(writer http.ResponseWriter, request *http.Request) {
-// 	// GameFinishRequest ゲーム終了request
-// 	type GameFinishRequest struct {
-// 		Score int32 `json:"score"`
-// 	}
-// 	// GameFinishResponse ゲーム終了response
-// 	type GameFinishResponse struct {
-// 		Coin int32 `json:"coin"`
-// 	}
-
-// 	// リクエストBodyから更新後情報を取得
-// 	var requestBody GameFinishRequest
-// 	if err := json.NewDecoder(request.Body).Decode(&requestBody); err != nil {
-// 		log.Println(err)
-// 		response.InternalServerError(writer, "Internal Server Error")
-// 		return
-// 	}
-// 	// user取得
-// 	user := GetUser(writer, request, uh)
-// 	// Coin, highScoreの更新
-// 	coin, errMsg := UpdateCoinAndHighScore(requestBody.Score, user)
-// 	if errMsg != "" {
-// 		log.Println(errors.New(errMsg))
-// 		response.BadRequest(writer, errMsg)
-// 		return
-// 	}
-// 	fmt.Print(user)
-
-// 	// user更新
-// 	if err := uh.userUseCase.UpdateUserLByUser(user); err != nil {
-// 		log.Println(err)
-// 		response.InternalServerError(writer, "Internal Server Error")
-// 		return
-// 	}
-// 	// レスポンスに必要な情報を詰めて返却
-// 	response.Success(writer, &GameFinishResponse{
-// 		Coin: coin,
-// 	})
-// }
+	// コンテキストからuserID取得
+	ctx := request.Context()
+	userID := dcontext.GetUserIDFromContext(ctx)
+	if userID == "" {
+		myErr := uh.userUseCase.CreateMyErr(
+			fmt.Errorf("userID is empty"),
+			500,
+		)
+		DoErr(writer, myErr)
+		return
+	}
+	// リクエストBodyから更新後情報を取得
+	var requestBody GameFinishRequest
+	if err := json.NewDecoder(request.Body).Decode(&requestBody); err != nil {
+		myErr := uh.userUseCase.CreateMyErr(
+			err,
+			500,
+		)
+		DoErr(writer, myErr)
+		return
+	}
+	// coinとscoreを更新
+	coin, myErr := uh.userUseCase.UpdateCoinAndHighScore(userID, requestBody.Score)
+	if myErr != nil {
+		DoErr(writer, myErr)
+		return
+	}
+	// レスポンスに必要な情報を詰めて返却
+	response.Success(writer, &GameFinishResponse{
+		Coin: coin,
+	})
+}
