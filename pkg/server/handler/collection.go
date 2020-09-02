@@ -32,7 +32,7 @@ func HandleCollectionList() http.HandlerFunc {
 		userID := dcontext.GetUserIDFromContext(ctx)
 		if userID == "" {
 			log.Println(errors.New("userID is empty"))
-			response.InternalServerError(writer, "Internal Server Error")
+			response.BadRequest(writer, fmt.Sprintf("userID is empty. UserID might not contain in context."))
 			return
 		}
 		// ユーザデータの取得処理と存在チェックを実装
@@ -64,7 +64,7 @@ func HandleCollectionList() http.HandlerFunc {
 		// TODO: キャッシュで実現したい
 		// hasGotItemMap ユーザが所持しているアイテムを示すmap
 		// [注意] ガチャ実行時も追加するので可変長指定
-		hasGotItemMap := make(map[string]bool)
+		hasGotItemMap := make(map[string]bool, len(userCollectionItemSlice))
 		for _, userCollectionItem := range userCollectionItemSlice {
 			itemID := userCollectionItem.CollectionItemID
 			hasGotItemMap[itemID] = true

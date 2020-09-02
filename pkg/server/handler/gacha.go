@@ -190,8 +190,7 @@ func HandleGachaDraw() http.HandlerFunc {
 			}
 		}
 		// 3-2. ユーザの保持コイン更新
-		// user.Coin = user.Coin - constant.GachaCoinConsumption*gachaTimes
-		if err = model.UpdateUserByPrimaryKeyInTx(user, tx); err != nil {
+		if err := model.UpdateUserByPrimaryKeyInTx(user, tx); err != nil {
 			log.Println(err)
 			response.InternalServerError(writer, "Internal Server Error")
 			return
