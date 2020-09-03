@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
 	"20dojo-online/pkg/dcontext"
 	"20dojo-online/pkg/http/response"
@@ -14,10 +15,11 @@ import (
 
 // UserHandler UserにおけるHandlerのインターフェース
 type UserHandler interface {
-	HandleUserLGet(http.ResponseWriter, *http.Request)
-	HandleUserLCreate(http.ResponseWriter, *http.Request)
-	HandleUserLUpdate(http.ResponseWriter, *http.Request)
-	HandleGameFinish(http.ResponseWriter, *http.Request)
+	HandleUserGet(writer http.ResponseWriter, request *http.Request)
+	HandleUserCreate(writer http.ResponseWriter, request *http.Request)
+	HandleUserUpdate(writer http.ResponseWriter, request *http.Request)
+	HandleGameFinish(writer http.ResponseWriter, request *http.Request)
+	HandleRankingList(writer http.ResponseWriter, request *http.Request)
 }
 
 // TODO: あまりわかっていない
@@ -51,8 +53,8 @@ func DoErr(writer http.ResponseWriter, myErr *model.MyErr) {
 
 }
 
-// HandleUserLGet ユーザ情報取得
-func (uh userHandler) HandleUserLGet(writer http.ResponseWriter, request *http.Request) {
+// HandleUserGet ユーザ情報取得
+func (uh userHandler) HandleUserGet(writer http.ResponseWriter, request *http.Request) {
 	// userGetResponse ユーザ取得response
 	type userGetResponse struct {
 		ID        string `json:"id"`
@@ -73,7 +75,7 @@ func (uh userHandler) HandleUserLGet(writer http.ResponseWriter, request *http.R
 		return
 	}
 	// ユーザ取得
-	user, myErr := uh.userUseCase.GetUserLByUserID(userID)
+	user, myErr := uh.userUseCase.GetUserByUserID(userID)
 	if myErr != nil {
 		DoErr(writer, myErr)
 		return
@@ -88,8 +90,8 @@ func (uh userHandler) HandleUserLGet(writer http.ResponseWriter, request *http.R
 
 }
 
-// HandleUserLCreate　ユーザ作成
-func (uh userHandler) HandleUserLCreate(writer http.ResponseWriter, request *http.Request) {
+// HandleUserCreate　ユーザ作成
+func (uh userHandler) HandleUserCreate(writer http.ResponseWriter, request *http.Request) {
 	// userCreateRequest ユーザ作成request
 	type userCreateRequest struct {
 		Name string `json:"name"`
@@ -122,8 +124,8 @@ func (uh userHandler) HandleUserLCreate(writer http.ResponseWriter, request *htt
 
 }
 
-// HandleUserLUpdate　ユーザ情報更新
-func (uh userHandler) HandleUserLUpdate(writer http.ResponseWriter, request *http.Request) {
+// HandleUserUpdate　ユーザ情報更新
+func (uh userHandler) HandleUserUpdate(writer http.ResponseWriter, request *http.Request) {
 	// userUpdateRequest ユーザ更新request
 	type userUpdateRequest struct {
 		Name string `json:"name"`
@@ -200,5 +202,68 @@ func (uh userHandler) HandleGameFinish(writer http.ResponseWriter, request *http
 	// レスポンスに必要な情報を詰めて返却
 	response.Success(writer, &GameFinishResponse{
 		Coin: coin,
+	})
+}
+
+// HandleRankingList ランキング取得
+func (uh userHandler) HandleRankingList(writer http.ResponseWriter, request *http.Request) {
+	// rankInfo ランキング情報
+	type rankInfo struct {
+		UserID   string `json:"userId"`
+		UserName string `json:"userName"`
+		Rank     int32  `json:"rank"`
+		Score    int32  `json:"score"`
+	}
+
+	// RankingListResponse レスポンス形式
+	type rankingListResponse struct {
+		Ranks []rankInfo `json:"ranks"`
+	}
+
+	// クエリ取得
+	query := request.URL.Query()
+	if len(query["start"]) != 1 {
+		myErr := uh.userUseCase.CreateMyErr(
+			fmt.Errorf("the length of query must be one"),
+			500,
+		)
+		DoErr(writer, myErr)
+		return
+	}
+	startNum, err := strconv.Atoi(query["start"][0])
+	if err != nil {
+		myErr := uh.userUseCase.CreateMyErr(
+			err,
+			500,
+		)
+		DoErr(writer, myErr)
+		return
+	}
+	if startNum <= 0 {
+		myErr := uh.userUseCase.CreateMyErr(
+			fmt.Errorf("query'start' must be positive"),
+			400,
+		)
+		DoErr(writer, myErr)
+		return
+	}
+	// 対象範囲のユーザのスライス取得
+	users, myErr := uh.userUseCase.GetUsersByHighScore(int32(startNum))
+	if myErr != nil {
+		DoErr(writer, myErr)
+		return
+	}
+	rankingList := make([]rankInfo, len(users), len(users))
+	for i, user := range users {
+		rankingList[i] = rankInfo{
+			UserID:   user.ID,
+			UserName: user.Name,
+			Rank:     int32(startNum + i),
+			Score:    user.HighScore,
+		}
+	}
+
+	response.Success(writer, &rankingListResponse{
+		Ranks: rankingList,
 	})
 }

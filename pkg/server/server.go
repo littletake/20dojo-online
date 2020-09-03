@@ -19,13 +19,13 @@ func Serve(addr string) {
 	userUseCase := usecase.NewUserUseCase(userPersistence)
 	userHandler := handler.NewUserHandler(userUseCase)
 	// ユーザ情報取得
-	http.HandleFunc("/userL/get",
-		get(middleware.Authenticate(userHandler.HandleUserLGet)))
+	http.HandleFunc("/user/get",
+		get(middleware.Authenticate(userHandler.HandleUserGet)))
 	// ユーザ作成
-	http.HandleFunc("/userL/create", post(userHandler.HandleUserLCreate))
+	http.HandleFunc("/user/create", post(userHandler.HandleUserCreate))
 	// ユーザ情報更新
-	http.HandleFunc("/userL/update",
-		post(middleware.Authenticate(userHandler.HandleUserLUpdate)))
+	http.HandleFunc("/user/update",
+		post(middleware.Authenticate(userHandler.HandleUserUpdate)))
 	// インゲーム終了
 	http.HandleFunc("/game/finish",
 		post(middleware.Authenticate(userHandler.HandleGameFinish)))
@@ -46,7 +46,7 @@ func Serve(addr string) {
 
 	// ランキング情報取得
 	http.HandleFunc("/ranking/list",
-		get(middleware.Authenticate(handler.HandleRankingList())))
+		get(middleware.Authenticate(userHandler.HandleRankingList)))
 
 	// ガチャ実行
 	http.HandleFunc("/gacha/draw",

@@ -6,7 +6,8 @@ import "20dojo-online/pkg/server/domain/model"
 
 // UserRepository User におけるRepository のインターフェース
 type UserRepository interface {
-	SelectUserLByUserID(string) (*model.UserL, error)
-	InsertUserL(*model.UserL) error
-	UpdateUserLByUser(*model.UserL) error
+	SelectUserByUserID(userID string) (user *model.UserL, err error)
+	InsertUser(user *model.UserL) (err error)
+	UpdateUserByUser(user *model.UserL) (err error)
+	SelectUsersByHighScore(start int32) (user []*model.UserL, err error)
 }
