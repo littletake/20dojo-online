@@ -5,19 +5,30 @@ import (
 	"net/http"
 
 	"20dojo-online/pkg/server/infra/persistence"
+	"20dojo-online/pkg/server/interface/handler"
+	"20dojo-online/pkg/server/interface/middleware"
 	"20dojo-online/pkg/server/usecase"
-
-	"20dojo-online/pkg/http/middleware"
-	"20dojo-online/pkg/server/handler"
-	"20dojo-online/pkg/server/initializer"
 )
 
 // Serve HTTPサーバを起動する
 func Serve(addr string) {
 	// レイヤードアーキテクチャ
 	userPersistence := persistence.NewUserPersistence()
+	// cItemPersistence := persistence.NewCItemPersistence()
+	// ucItemPersistence := persistence.NewUCItemPersistence()
+
 	userUseCase := usecase.NewUserUseCase(userPersistence)
+	gameUseCase := usecase.NewGameUseCase(userPersistence)
+	rankingUseCase := usecase.NewRankingUseCase(userPersistence)
+	// gachaUseCase := usecase.NewGachaUseCase(userPersistence, cItemPersistence, ucItemPersistence)
+
 	userHandler := handler.NewUserHandler(userUseCase)
+	gameHandler := handler.NewGameHandler(gameUseCase)
+	rankingHandler := handler.NewRankingHandler(rankingUseCase)
+
+	middleware := middleware.NewMiddleware(userUseCase)
+	// gachaHandler := handler.NewGachaHandler(gachaUseCase)
+
 	// ユーザ情報取得
 	http.HandleFunc("/user/get",
 		get(middleware.Authenticate(userHandler.HandleUserGet)))
@@ -28,10 +39,16 @@ func Serve(addr string) {
 		post(middleware.Authenticate(userHandler.HandleUserUpdate)))
 	// インゲーム終了
 	http.HandleFunc("/game/finish",
-		post(middleware.Authenticate(userHandler.HandleGameFinish)))
+		post(middleware.Authenticate(gameHandler.HandleGameFinish)))
+	// ランキング情報取得
+	http.HandleFunc("/ranking/list",
+		get(middleware.Authenticate(rankingHandler.HandleRankingList)))
+	// // ガチャ実行
+	// http.HandleFunc("/gacha/draw",
+	// 	post(middleware.Authenticate(gachaHandler.HandleGachaDraw)))
 
 	/* ===== URLマッピングを行う ===== */
-	http.HandleFunc("/setting/get", get(handler.HandleSettingGet()))
+	// http.HandleFunc("/setting/get", get(handler.HandleSettingGet()))
 	// http.HandleFunc("/user/create", post(handler.HandleUserCreate()))
 
 	// 認証を行うmiddlewareを追加する
@@ -44,23 +61,19 @@ func Serve(addr string) {
 	// http.HandleFunc("/game/finish",
 	// 	post(middleware.Authenticate(handler.HandleGameFinish())))
 
-	// ランキング情報取得
-	http.HandleFunc("/ranking/list",
-		get(middleware.Authenticate(userHandler.HandleRankingList)))
+	// // ガチャ実行
+	// http.HandleFunc("/gacha/draw",
+	// 	post(middleware.Authenticate(handler.HandleGachaDraw())))
 
-	// ガチャ実行
-	http.HandleFunc("/gacha/draw",
-		post(middleware.Authenticate(handler.HandleGachaDraw())))
+	// // コレクションアイテム一覧情報取得
+	// http.HandleFunc("/collection/list",
+	// 	get(middleware.Authenticate(handler.HandleCollectionList())))
 
-	// コレクションアイテム一覧情報取得
-	http.HandleFunc("/collection/list",
-		get(middleware.Authenticate(handler.HandleCollectionList())))
-
-	// 初期化
-	// アイテム対応表の作成
-	if err := initializer.CreateItemRatioSliceOnce(); err != nil {
-		log.Println(err)
-	}
+	// // 初期化
+	// // アイテム対応表の作成
+	// if err := initializer.CreateItemRatioSliceOnce(); err != nil {
+	// 	log.Println(err)
+	// }
 
 	/* ===== サーバの起動 ===== */
 	log.Println("Server running...")

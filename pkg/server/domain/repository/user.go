@@ -1,13 +1,17 @@
 package repository
 
-import "20dojo-online/pkg/server/domain/model"
+import (
+	"database/sql"
 
-// TODO: 命名を考える
+	"20dojo-online/pkg/server/domain/model"
+)
 
 // UserRepository User におけるRepository のインターフェース
 type UserRepository interface {
-	SelectUserByUserID(userID string) (user *model.UserL, err error)
-	InsertUser(user *model.UserL) (err error)
-	UpdateUserByUser(user *model.UserL) (err error)
-	SelectUsersByHighScore(start int32) (user []*model.UserL, err error)
+	SelectUserByUserID(userID string) (*model.UserL, error)
+	SelectUserByAuthToken(userID string) (*model.UserL, error)
+	SelectUsersByHighScore(start int32) ([]*model.UserL, error)
+	InsertUser(user *model.UserL) error
+	UpdateUserByUser(user *model.UserL) error
+	UpdateUserByUserInTx(user *model.UserL, tx *sql.Tx) error
 }
