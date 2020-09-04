@@ -7,12 +7,12 @@ import (
 	"20dojo-online/pkg/db"
 )
 
-// CollectionItem table:collection_itemの内容
-type CollectionItem struct {
-	ItemID   string
-	ItemName string
-	Rarity   int32
-}
+// // CollectionItem table:collection_itemの内容
+// type CollectionItem struct {
+// 	ItemID   string
+// 	ItemName string
+// 	Rarity   int32
+// }
 
 // CollectionItemSlice CollectionItemのslice
 type CollectionItemSlice []*CollectionItem

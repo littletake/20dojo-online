@@ -22,14 +22,20 @@ func Serve(addr string) {
 	gameUseCase := usecase.NewGameUseCase(userPersistence)
 	rankingUseCase := usecase.NewRankingUseCase(userPersistence)
 	gachaUseCase := usecase.NewGachaUseCase(userPersistence, cItemPersistence, ucItemPersistence, gachaProbPersistence)
+	collectionUseCase := usecase.NewCollectionUseCase(userPersistence, cItemPersistence, ucItemPersistence)
 
+	settingHandler := handler.NewSettingHandler()
 	userHandler := handler.NewUserHandler(userUseCase)
 	gameHandler := handler.NewGameHandler(gameUseCase)
 	rankingHandler := handler.NewRankingHandler(rankingUseCase)
 	gachaHandler := handler.NewGachaHandler(gachaUseCase)
+	collectionHandler := handler.NewCollectionHandler(collectionUseCase)
 
 	middleware := middleware.NewMiddleware(userUseCase)
 
+	/* ===== URLマッピングを行う ===== */
+	// // 設定情報取得
+	http.HandleFunc("/setting/get", get(settingHandler.HandleSettingGet))
 	// ユーザ情報取得
 	http.HandleFunc("/user/get",
 		get(middleware.Authenticate(userHandler.HandleUserGet)))
@@ -47,14 +53,9 @@ func Serve(addr string) {
 	// ガチャ実行
 	http.HandleFunc("/gacha/draw",
 		post(middleware.Authenticate(gachaHandler.HandleGachaDraw)))
-
-	/* ===== URLマッピングを行う ===== */
-	// http.HandleFunc("/setting/get", get(handler.HandleSettingGet()))
-	// http.HandleFunc("/user/create", post(handler.HandleUserCreate()))
-
-	// // コレクションアイテム一覧情報取得
-	// http.HandleFunc("/collection/list",
-	// 	get(middleware.Authenticate(handler.HandleCollectionList())))
+	// コレクションアイテム一覧情報取得
+	http.HandleFunc("/collection/list",
+		get(middleware.Authenticate(collectionHandler.HandleCollectionList)))
 
 	/* ===== サーバの起動 ===== */
 	log.Println("Server running...")

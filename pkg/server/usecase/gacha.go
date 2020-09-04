@@ -36,18 +36,6 @@ func NewGachaUseCase(ur repository.UserRepository, cr repository.CItemRepository
 	}
 }
 
-// collectionItemのスライス
-var cItemSlice []*model.CollectionItem
-
-// Collection_itemの情報の取得状況
-var hasGotcItemSlice bool
-
-// itemRatioSlice ratioを考慮したアイテム対応表
-var itemRatioSlice []int32
-
-// gacha_probabilityの情報の取得状況
-var hasGotGachaProb bool
-
 // GetUsersByHighScore Userデータを条件抽出
 func (gu gachaUseCase) Gacha(gachaTimes int32, userID string) ([]*model.GachaResult, *myerror.MyErr) {
 	// userIDと照合するユーザを取得
