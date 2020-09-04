@@ -14,20 +14,21 @@ import (
 func Serve(addr string) {
 	// レイヤードアーキテクチャ
 	userPersistence := persistence.NewUserPersistence()
-	// cItemPersistence := persistence.NewCItemPersistence()
-	// ucItemPersistence := persistence.NewUCItemPersistence()
+	cItemPersistence := persistence.NewCItemPersistence()
+	ucItemPersistence := persistence.NewUCItemPersistence()
+	gachaProbPersistence := persistence.NewGachaProbPersistence()
 
 	userUseCase := usecase.NewUserUseCase(userPersistence)
 	gameUseCase := usecase.NewGameUseCase(userPersistence)
 	rankingUseCase := usecase.NewRankingUseCase(userPersistence)
-	// gachaUseCase := usecase.NewGachaUseCase(userPersistence, cItemPersistence, ucItemPersistence)
+	gachaUseCase := usecase.NewGachaUseCase(userPersistence, cItemPersistence, ucItemPersistence, gachaProbPersistence)
 
 	userHandler := handler.NewUserHandler(userUseCase)
 	gameHandler := handler.NewGameHandler(gameUseCase)
 	rankingHandler := handler.NewRankingHandler(rankingUseCase)
+	gachaHandler := handler.NewGachaHandler(gachaUseCase)
 
 	middleware := middleware.NewMiddleware(userUseCase)
-	// gachaHandler := handler.NewGachaHandler(gachaUseCase)
 
 	// ユーザ情報取得
 	http.HandleFunc("/user/get",
@@ -43,37 +44,17 @@ func Serve(addr string) {
 	// ランキング情報取得
 	http.HandleFunc("/ranking/list",
 		get(middleware.Authenticate(rankingHandler.HandleRankingList)))
-	// // ガチャ実行
-	// http.HandleFunc("/gacha/draw",
-	// 	post(middleware.Authenticate(gachaHandler.HandleGachaDraw)))
+	// ガチャ実行
+	http.HandleFunc("/gacha/draw",
+		post(middleware.Authenticate(gachaHandler.HandleGachaDraw)))
 
 	/* ===== URLマッピングを行う ===== */
 	// http.HandleFunc("/setting/get", get(handler.HandleSettingGet()))
 	// http.HandleFunc("/user/create", post(handler.HandleUserCreate()))
 
-	// 認証を行うmiddlewareを追加する
-	// http.HandleFunc("/user/get",
-	// 	get(middleware.Authenticate(handler.HandleUserGet())))
-	// http.HandleFunc("/user/update",
-	// 	post(middleware.Authenticate(handler.HandleUserUpdate())))
-
-	// // インゲーム終了処理
-	// http.HandleFunc("/game/finish",
-	// 	post(middleware.Authenticate(handler.HandleGameFinish())))
-
-	// // ガチャ実行
-	// http.HandleFunc("/gacha/draw",
-	// 	post(middleware.Authenticate(handler.HandleGachaDraw())))
-
 	// // コレクションアイテム一覧情報取得
 	// http.HandleFunc("/collection/list",
 	// 	get(middleware.Authenticate(handler.HandleCollectionList())))
-
-	// // 初期化
-	// // アイテム対応表の作成
-	// if err := initializer.CreateItemRatioSliceOnce(); err != nil {
-	// 	log.Println(err)
-	// }
 
 	/* ===== サーバの起動 ===== */
 	log.Println("Server running...")
