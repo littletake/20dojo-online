@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"log"
 
-	"20dojo-online/pkg/constant"
 	"20dojo-online/pkg/db"
 	"20dojo-online/pkg/server/domain/model"
 	"20dojo-online/pkg/server/domain/repository"
@@ -31,9 +30,9 @@ func (up userPersistence) SelectUserByAuthToken(token string) (*model.UserL, err
 }
 
 // SelectUsersByHighScore high_scoreを基準に降順にしたレコードを取得
-func (up userPersistence) SelectUsersByHighScore(start int32) ([]*model.UserL, error) {
+func (up userPersistence) SelectUsersByHighScore(limit int32, start int32) ([]*model.UserL, error) {
 	// 任意の順位(start)からRankingListNumber分取得
-	rows, err := db.Conn.Query("SELECT * FROM user ORDER BY high_score DESC LIMIT ? OFFSET ?", constant.RankingListNumber, start-1)
+	rows, err := db.Conn.Query("SELECT * FROM user ORDER BY high_score DESC LIMIT ? OFFSET ?", limit, start-1)
 	if err != nil {
 		return nil, err
 	}
