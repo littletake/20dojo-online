@@ -35,27 +35,27 @@ func Serve(addr string) {
 
 	/* ===== URLマッピングを行う ===== */
 	// // 設定情報取得
-	http.HandleFunc("/setting/get", get(settingHandler.HandleSettingGet))
+	http.HandleFunc("/setting/get", get(settingHandler.HandleSettingGet()))
 	// ユーザ情報取得
 	http.HandleFunc("/user/get",
-		get(middleware.Authenticate(userHandler.HandleUserGet)))
+		get(middleware.Authenticate(userHandler.HandleUserGet())))
 	// ユーザ作成
-	http.HandleFunc("/user/create", post(userHandler.HandleUserCreate))
+	http.HandleFunc("/user/create", post(userHandler.HandleUserCreate()))
 	// ユーザ情報更新
 	http.HandleFunc("/user/update",
-		post(middleware.Authenticate(userHandler.HandleUserUpdate)))
+		post(middleware.Authenticate(userHandler.HandleUserUpdate())))
 	// インゲーム終了
 	http.HandleFunc("/game/finish",
-		post(middleware.Authenticate(gameHandler.HandleGameFinish)))
+		post(middleware.Authenticate(gameHandler.HandleGameFinish())))
 	// ランキング情報取得
 	http.HandleFunc("/ranking/list",
-		get(middleware.Authenticate(rankingHandler.HandleRankingList)))
+		get(middleware.Authenticate(rankingHandler.HandleRankingList())))
 	// ガチャ実行
 	http.HandleFunc("/gacha/draw",
-		post(middleware.Authenticate(gachaHandler.HandleGachaDraw)))
+		post(middleware.Authenticate(gachaHandler.HandleGachaDraw())))
 	// コレクションアイテム一覧情報取得
 	http.HandleFunc("/collection/list",
-		get(middleware.Authenticate(collectionHandler.HandleCollectionList)))
+		get(middleware.Authenticate(collectionHandler.HandleCollectionList())))
 
 	/* ===== サーバの起動 ===== */
 	log.Println("Server running...")
