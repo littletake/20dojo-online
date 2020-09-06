@@ -33,24 +33,24 @@ func ChangeScoreToCoin(score int32) int32 {
 func (gu gameUseCase) UpdateCoinAndHighScore(userID string, score int32) (int32, *myerror.MyErr) {
 	// coinとhighScoreを更新
 	if score < 0 {
-		myErr := myerror.MyErr{
+		myErr := myerror.NewMyErr(
 			fmt.Errorf("score must be positive. score=%d", score),
 			400,
-		}
-		return 0, &myErr
+		)
+		return 0, myErr
 	}
 	// ユーザ取得
 	user, err := gu.userRepository.SelectUserByUserID(userID)
 	if err != nil {
-		myErr := myerror.MyErr{err, 500}
-		return 0, &myErr
+		myErr := myerror.NewMyErr(err, 500)
+		return 0, myErr
 	}
 	if user == nil {
-		myErr := myerror.MyErr{
+		myErr := myerror.NewMyErr(
 			fmt.Errorf("user not found"),
 			500,
-		}
-		return 0, &myErr
+		)
+		return 0, myErr
 	}
 	// コインに変換
 	// TODO: コインに変換するアルゴリズムを工夫する
@@ -63,8 +63,8 @@ func (gu gameUseCase) UpdateCoinAndHighScore(userID string, score int32) (int32,
 	}
 	// 更新を保存
 	if err := gu.userRepository.UpdateUserByUser(user); err != nil {
-		myErr := myerror.MyErr{err, 500}
-		return 0, &myErr
+		myErr := myerror.NewMyErr(err, 500)
+		return 0, myErr
 	}
 	return coin, nil
 }

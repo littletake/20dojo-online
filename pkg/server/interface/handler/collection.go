@@ -5,9 +5,9 @@ import (
 	"net/http"
 
 	"20dojo-online/pkg/dcontext"
-	"20dojo-online/pkg/http/response"
 	"20dojo-online/pkg/server/domain/model"
 	"20dojo-online/pkg/server/interface/myerror"
+	"20dojo-online/pkg/server/interface/response"
 	"20dojo-online/pkg/server/usecase"
 )
 
@@ -40,10 +40,10 @@ func (ch collectionHandler) HandleCollectionList() http.HandlerFunc {
 		ctx := request.Context()
 		userID := dcontext.GetUserIDFromContext(ctx)
 		if userID == "" {
-			myErr := myerror.MyErr{
+			myErr := myerror.NewMyErr(
 				fmt.Errorf("userID is empty"),
 				500,
-			}
+			)
 			myErr.HandleErr(writer)
 			return
 		}

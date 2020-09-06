@@ -35,15 +35,15 @@ func (uu userUseCase) GetUserByUserID(userID string) (*model.UserL, *myerror.MyE
 	// idと照合するユーザを取得
 	user, err := uu.userRepository.SelectUserByUserID(userID)
 	if err != nil {
-		myErr := myerror.MyErr{err, 500}
-		return nil, &myErr
+		myErr := myerror.NewMyErr(err, 500)
+		return nil, myErr
 	}
 	if user == nil {
-		myErr := myerror.MyErr{
+		myErr := myerror.NewMyErr(
 			fmt.Errorf("user not found"),
 			500,
-		}
-		return nil, &myErr
+		)
+		return nil, myErr
 	}
 	return user, nil
 }
@@ -53,15 +53,15 @@ func (uu userUseCase) GetUserByAuthToken(token string) (*model.UserL, *myerror.M
 	// tokenと照合するユーザを取得
 	user, err := uu.userRepository.SelectUserByAuthToken(token)
 	if err != nil {
-		myErr := myerror.MyErr{err, 500}
-		return nil, &myErr
+		myErr := myerror.NewMyErr(err, 500)
+		return nil, myErr
 	}
 	if user == nil {
-		myErr := myerror.MyErr{
+		myErr := myerror.NewMyErr(
 			fmt.Errorf("user not found. token=%s", token),
 			400,
-		}
-		return nil, &myErr
+		)
+		return nil, myErr
 	}
 	return user, nil
 }
@@ -72,14 +72,14 @@ func (uu userUseCase) RegisterUserFromUserName(userName string) (string, *myerro
 	// UUIDでユーザIDを生成する
 	userID, err := uuid.NewRandom()
 	if err != nil {
-		myErr := myerror.MyErr{err, 500}
-		return "", &myErr
+		myErr := myerror.NewMyErr(err, 500)
+		return "", myErr
 	}
 	// UUIDで認証トークンを生成する
 	token, err := uuid.NewRandom()
 	if err != nil {
-		myErr := myerror.MyErr{err, 500}
-		return "", &myErr
+		myErr := myerror.NewMyErr(err, 500)
+		return "", myErr
 	}
 	// ユーザ作成
 	user := &model.UserL{
@@ -91,8 +91,8 @@ func (uu userUseCase) RegisterUserFromUserName(userName string) (string, *myerro
 	}
 	// ユーザ登録
 	if err = uu.userRepository.InsertUser(user); err != nil {
-		myErr := myerror.MyErr{err, 500}
-		return "", &myErr
+		myErr := myerror.NewMyErr(err, 500)
+		return "", myErr
 	}
 	return user.AuthToken, nil
 }
@@ -108,8 +108,8 @@ func (uu userUseCase) UpdateUserName(userID string, userName string) *myerror.My
 	user.Name = userName
 	// 更新を保存
 	if err := uu.userRepository.UpdateUserByUser(user); err != nil {
-		myErr := myerror.MyErr{err, 500}
-		return &myErr
+		myErr := myerror.NewMyErr(err, 500)
+		return myErr
 	}
 	return nil
 }

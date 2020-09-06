@@ -6,8 +6,8 @@ import (
 	"net/http"
 
 	"20dojo-online/pkg/dcontext"
-	"20dojo-online/pkg/http/response"
 	"20dojo-online/pkg/server/interface/myerror"
+	"20dojo-online/pkg/server/interface/response"
 	"20dojo-online/pkg/server/usecase"
 )
 
@@ -21,7 +21,7 @@ type gameHandler struct {
 	gameUseCase usecase.GameUseCase
 }
 
-// NewGameHandler Userデータに関するHandler
+// NewGameHandler Handlerを生成
 func NewGameHandler(gu usecase.GameUseCase) GameHandler {
 	return &gameHandler{
 		gameUseCase: gu,
@@ -44,17 +44,17 @@ func (gh gameHandler) HandleGameFinish() http.HandlerFunc {
 		ctx := request.Context()
 		userID := dcontext.GetUserIDFromContext(ctx)
 		if userID == "" {
-			myErr := myerror.MyErr{
+			myErr := myerror.NewMyErr(
 				fmt.Errorf("userID is empty"),
 				500,
-			}
+			)
 			myErr.HandleErr(writer)
 			return
 		}
 		// リクエストBodyから更新後情報を取得
 		var requestBody GameFinishRequest
 		if err := json.NewDecoder(request.Body).Decode(&requestBody); err != nil {
-			myErr := myerror.MyErr{err, 500}
+			myErr := myerror.NewMyErr(err, 500)
 			myErr.HandleErr(writer)
 			return
 		}

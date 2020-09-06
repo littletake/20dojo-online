@@ -29,16 +29,16 @@ func (ru rankingUseCase) GetUsersByHighScore(startNum int32) ([]*model.UserL, *m
 	// idと照合するユーザを取得
 	userSlice, err := ru.userRepository.SelectUsersByHighScore(startNum)
 	if err != nil {
-		myErr := myerror.MyErr{err, 500}
-		return nil, &myErr
+		myErr := myerror.NewMyErr(err, 500)
+		return nil, myErr
 	}
 	// TODO: 順位範囲外の処理
 	if len(userSlice) == 0 {
-		myErr := myerror.MyErr{
+		myErr := myerror.NewMyErr(
 			fmt.Errorf("user not found. rank=%d", startNum),
 			400,
-		}
-		return nil, &myErr
+		)
+		return nil, myErr
 	}
 	return userSlice, nil
 }

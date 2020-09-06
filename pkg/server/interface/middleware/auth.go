@@ -38,10 +38,10 @@ func (m middleware) Authenticate(nextFunc http.HandlerFunc) http.HandlerFunc {
 		// リクエストヘッダからx-token(認証トークン)を取得
 		token := request.Header.Get("x-token")
 		if token == "" {
-			myErr := myerror.MyErr{
+			myErr := myerror.NewMyErr(
 				fmt.Errorf("x-token is empty"),
 				400,
-			}
+			)
 			myErr.HandleErr(writer)
 			return
 		}

@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"20dojo-online/pkg/http/response"
 	"20dojo-online/pkg/server/interface/myerror"
+	"20dojo-online/pkg/server/interface/response"
 	"20dojo-online/pkg/server/usecase"
 )
 
@@ -20,7 +20,7 @@ type rankingHandler struct {
 	rankingUseCase usecase.RankingUseCase
 }
 
-// NewRankingHandler Userデータに関するHandler
+// NewRankingHandler Handlerを生成
 func NewRankingHandler(ru usecase.RankingUseCase) RankingHandler {
 	return &rankingHandler{
 		rankingUseCase: ru,
@@ -46,24 +46,24 @@ func (rh rankingHandler) HandleRankingList() http.HandlerFunc {
 		// クエリ取得
 		query := request.URL.Query()
 		if len(query["start"]) != 1 {
-			myErr := myerror.MyErr{
+			myErr := myerror.NewMyErr(
 				fmt.Errorf("the length of query must be one"),
 				500,
-			}
+			)
 			myErr.HandleErr(writer)
 			return
 		}
 		startNum, err := strconv.Atoi(query["start"][0])
 		if err != nil {
-			myErr := myerror.MyErr{err, 500}
+			myErr := myerror.NewMyErr(err, 500)
 			myErr.HandleErr(writer)
 			return
 		}
 		if startNum <= 0 {
-			myErr := myerror.MyErr{
+			myErr := myerror.NewMyErr(
 				fmt.Errorf("query'start' must be positive"),
 				400,
-			}
+			)
 			myErr.HandleErr(writer)
 			return
 		}

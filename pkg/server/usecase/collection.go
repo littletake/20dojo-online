@@ -19,7 +19,7 @@ type collectionUseCase struct {
 	ucItemRepository repository.UCItemRepository
 }
 
-// NewCollectionUseCase Userデータに関するUseCaseを生成
+// NewCollectionUseCase UseCaseを生成
 func NewCollectionUseCase(ur repository.UserRepository, cr repository.CItemRepository,
 	ucr repository.UCItemRepository) CollectionUseCase {
 	return &collectionUseCase{
@@ -42,22 +42,22 @@ func (cu collectionUseCase) GetCollectionSlice(userID string) ([]*model.Collecti
 	// ユーザデータの取得処理と存在チェックを実装
 	user, err := cu.userRepository.SelectUserByUserID(userID)
 	if err != nil {
-		myErr := myerror.MyErr{err, 500}
-		return nil, &myErr
+		myErr := myerror.NewMyErr(err, 500)
+		return nil, myErr
 	}
 	if user == nil {
-		myErr := myerror.MyErr{
+		myErr := myerror.NewMyErr(
 			fmt.Errorf("user not found"),
 			500,
-		}
-		return nil, &myErr
+		)
+		return nil, myErr
 	}
 	// 現ユーザが保持しているアイテムの情報をまとめる -> hasGotItemMap
 	// table: user_collection_itemに対してuserIDのものを取得
 	ucItemSlice, err := cu.ucItemRepository.SelectUCItemSliceByUserID(userID)
 	if err != nil {
-		myErr := myerror.MyErr{err, 500}
-		return nil, &myErr
+		myErr := myerror.NewMyErr(err, 500)
+		return nil, myErr
 	}
 	// hasGotItemMap 既出アイテム一覧map
 	// [注意] ガチャ実行時も追加するので可変長指定
@@ -71,8 +71,8 @@ func (cu collectionUseCase) GetCollectionSlice(userID string) ([]*model.Collecti
 	if !hasGotcItemSlice {
 		cItemSlice, err = cu.cItemRepository.SelectAllCollectionItem()
 		if err != nil {
-			myErr := myerror.MyErr{err, 500}
-			return nil, &myErr
+			myErr := myerror.NewMyErr(err, 500)
+			return nil, myErr
 		}
 		hasGotcItemSlice = true
 	}

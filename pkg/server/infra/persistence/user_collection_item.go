@@ -27,8 +27,6 @@ func (up ucItemPersistence) SelectUCItemSliceByUserID(userID string) ([]*model.U
 	return convertToUCItemSlice(rows)
 }
 
-// TODO: トランザクションを使わない場合も考慮して実装すること
-
 // BulkInsertUserCollectionItem データベースに複数レコードを登録する
 func (up ucItemPersistence) BulkInsertUCItemSlice(records []*model.UserCollectionItem, tx *sql.Tx) error {
 	var queryString strings.Builder

@@ -41,24 +41,24 @@ func (gu gachaUseCase) Gacha(gachaTimes int32, userID string) ([]*model.GachaRes
 	// userIDと照合するユーザを取得
 	user, err := gu.userRepository.SelectUserByUserID(userID)
 	if err != nil {
-		myErr := myerror.MyErr{err, 500}
-		return nil, &myErr
+		myErr := myerror.NewMyErr(err, 500)
+		return nil, myErr
 	}
 	if user == nil {
-		myErr := myerror.MyErr{
+		myErr := myerror.NewMyErr(
 			fmt.Errorf("user not found"),
 			500,
-		}
-		return nil, &myErr
+		)
+		return nil, myErr
 	}
 	// 必要枚数分のコインがあるかどうかを判定
 	necessaryCoins := constant.GachaCoinConsumption * gachaTimes
 	if user.Coin-necessaryCoins < 0 {
-		myErr := myerror.MyErr{
-			fmt.Errorf("user doesn't have enough coins. current: %d, necessary: %d", user.Coin, necessaryCoins),
+		myErr := myerror.NewMyErr(
+			fmt.Errorf("user doesn't have enough coins. actual: %d, expected: %d", user.Coin, necessaryCoins),
 			400,
-		}
-		return nil, &myErr
+		)
+		return nil, myErr
 	}
 	user.Coin = user.Coin - necessaryCoins
 
@@ -68,8 +68,8 @@ func (gu gachaUseCase) Gacha(gachaTimes int32, userID string) ([]*model.GachaRes
 	// table: user_collection_itemに対してuserIDのものを取得
 	ucItemSlice, err := gu.ucItemRepository.SelectUCItemSliceByUserID(userID)
 	if err != nil {
-		myErr := myerror.MyErr{err, 500}
-		return nil, &myErr
+		myErr := myerror.NewMyErr(err, 500)
+		return nil, myErr
 	}
 	// hasGotItemMap 既出アイテム一覧map
 	// [注意] ガチャ実行時も追加するので可変長指定
@@ -83,8 +83,8 @@ func (gu gachaUseCase) Gacha(gachaTimes int32, userID string) ([]*model.GachaRes
 	if !hasGotcItemSlice {
 		cItemSlice, err = gu.cItemRepository.SelectAllCollectionItem()
 		if err != nil {
-			myErr := myerror.MyErr{err, 500}
-			return nil, &myErr
+			myErr := myerror.NewMyErr(err, 500)
+			return nil, myErr
 		}
 		hasGotcItemSlice = true
 	}
@@ -138,8 +138,8 @@ func (gu gachaUseCase) Gacha(gachaTimes int32, userID string) ([]*model.GachaRes
 	// 3. トランザクション開始（複数DB操作）
 	tx, err := db.Conn.Begin()
 	if err != nil {
-		myErr := myerror.MyErr{err, 500}
-		return nil, &myErr
+		myErr := myerror.NewMyErr(err, 500)
+		return nil, myErr
 	}
 	// TODO: 書き方再検討
 	defer func() {
@@ -159,18 +159,18 @@ func (gu gachaUseCase) Gacha(gachaTimes int32, userID string) ([]*model.GachaRes
 	// 3-1. バルクインサート
 	if len(newItemSlice) != 0 {
 		if err := gu.ucItemRepository.BulkInsertUCItemSlice(newItemSlice, tx); err != nil {
-			myErr := myerror.MyErr{err, 500}
-			return nil, &myErr
+			myErr := myerror.NewMyErr(err, 500)
+			return nil, myErr
 		}
 	}
 	// 3-2. ユーザの保持コイン更新
 	if err := gu.userRepository.UpdateUserByUserInTx(user, tx); err != nil {
-		myErr := myerror.MyErr{err, 500}
-		return nil, &myErr
+		myErr := myerror.NewMyErr(err, 500)
+		return nil, myErr
 	}
 	if err := tx.Commit(); err != nil {
-		myErr := myerror.MyErr{err, 500}
-		return nil, &myErr
+		myErr := myerror.NewMyErr(err, 500)
+		return nil, myErr
 	}
 	return gachaResultSlice, nil
 }
@@ -180,8 +180,8 @@ func (gu gachaUseCase) CreateItemRatioSlice() *myerror.MyErr {
 	// gacha_probabilityの情報を取得
 	gachaProbSlice, err := gu.gachaProbRepository.SelectAllGachaProb()
 	if err != nil {
-		myErr := myerror.MyErr{err, 500}
-		return &myErr
+		myErr := myerror.NewMyErr(err, 500)
+		return myErr
 	}
 	itemRatioSlice = make([]int32, len(gachaProbSlice))
 	count := int32(0)
@@ -230,7 +230,6 @@ func detectNumber(random int32) int32 {
 // 	for i := int32(0); i < gachaTimes; i++ {
 // 		randomNum := rand.Int31n(itemRatioSlice[len(itemRatioSlice)-1])
 // 		index := detectNumber(randomNum)
-// 		// TODO: 以下のitemIDを取得する部分，collectionItemSliceではなくgachaProbで代用できない??
 // 		fmt.Print(gachaProbSlice)
 // 		fmt.Print(index)
 // 		gettingItemSlice[i] = gachaProbSlice[index].CollectionItemID

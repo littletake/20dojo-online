@@ -34,7 +34,6 @@ func (up userPersistence) SelectUserByAuthToken(token string) (*model.UserL, err
 func (up userPersistence) SelectUsersByHighScore(start int32) ([]*model.UserL, error) {
 	// 任意の順位(start)からRankingListNumber分取得
 	rows, err := db.Conn.Query("SELECT * FROM user ORDER BY high_score DESC LIMIT ? OFFSET ?", constant.RankingListNumber, start-1)
-	// TODO: 意味をしっかり理解してエラー処理を書く
 	if err != nil {
 		return nil, err
 	}

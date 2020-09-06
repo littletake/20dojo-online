@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"20dojo-online/pkg/constant"
-	"20dojo-online/pkg/http/response"
+	"20dojo-online/pkg/server/interface/response"
 )
 
 // TODO: swaggerのdocに反映
