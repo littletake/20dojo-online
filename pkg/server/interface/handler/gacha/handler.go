@@ -1,4 +1,4 @@
-package handler
+package gacha
 
 import (
 	"encoding/json"
@@ -9,10 +9,10 @@ import (
 
 	"20dojo-online/pkg/constant"
 	"20dojo-online/pkg/dcontext"
-	"20dojo-online/pkg/http/response"
 	"20dojo-online/pkg/server/domain/model"
 	"20dojo-online/pkg/server/interface/myerror"
-	"20dojo-online/pkg/server/usecase"
+	"20dojo-online/pkg/server/interface/response"
+	usecase "20dojo-online/pkg/server/usecase/gacha"
 )
 
 // GachaHandler UserにおけるHandlerのインターフェース
@@ -25,7 +25,7 @@ type gachaHandler struct {
 	gachaUseCase usecase.GachaUseCase
 }
 
-// NewGachaHandler Userデータに関するHandler
+// NewGachaHandler Handlerを生成
 func NewGachaHandler(gu usecase.GachaUseCase) GachaHandler {
 	return &gachaHandler{
 		gachaUseCase: gu,
@@ -53,17 +53,17 @@ func (gh gachaHandler) HandleGachaDraw() http.HandlerFunc {
 		// リクエストBodyから更新情報を取得
 		var requestBody gachaDrawRequest
 		if err := json.NewDecoder(request.Body).Decode(&requestBody); err != nil {
-			myErr := myerror.MyErr{err, 500}
+			myErr := myerror.NewMyErr(err, 500)
 			myErr.HandleErr(writer)
 			return
 		}
 		// gachaTimes ガチャの回数
 		gachaTimes := requestBody.Times
 		if gachaTimes != constant.MinGachaTimes && gachaTimes != constant.MaxGachaTimes {
-			myErr := myerror.MyErr{
+			myErr := myerror.NewMyErr(
 				fmt.Errorf("requestBody'times' must be 1 or 10. times=%d", gachaTimes),
 				400,
-			}
+			)
 			myErr.HandleErr(writer)
 			return
 		}
@@ -71,10 +71,10 @@ func (gh gachaHandler) HandleGachaDraw() http.HandlerFunc {
 		ctx := request.Context()
 		userID := dcontext.GetUserIDFromContext(ctx)
 		if userID == "" {
-			myErr := myerror.MyErr{
+			myErr := myerror.NewMyErr(
 				fmt.Errorf("userID is empty"),
 				500,
-			}
+			)
 			myErr.HandleErr(writer)
 			return
 		}

@@ -1,4 +1,4 @@
-package handler
+package user
 
 import (
 	"encoding/json"
@@ -6,9 +6,9 @@ import (
 	"net/http"
 
 	"20dojo-online/pkg/dcontext"
-	"20dojo-online/pkg/http/response"
 	"20dojo-online/pkg/server/interface/myerror"
-	"20dojo-online/pkg/server/usecase"
+	"20dojo-online/pkg/server/interface/response"
+	usecase "20dojo-online/pkg/server/usecase/user"
 )
 
 // UserHandler UserにおけるHandlerのインターフェース
@@ -18,13 +18,12 @@ type UserHandler interface {
 	HandleUserUpdate() http.HandlerFunc
 }
 
-// TODO: あまりわかっていない
 // userHandler usecaseとhandlerをつなぐもの
 type userHandler struct {
 	userUseCase usecase.UserUseCase
 }
 
-// NewUserHandler Userデータに関するHandler
+// NewUserHandler Handlerを生成する関数
 func NewUserHandler(uu usecase.UserUseCase) UserHandler {
 	return &userHandler{
 		userUseCase: uu,
@@ -46,10 +45,10 @@ func (uh userHandler) HandleUserGet() http.HandlerFunc {
 		ctx := request.Context()
 		userID := dcontext.GetUserIDFromContext(ctx)
 		if userID == "" {
-			myErr := myerror.MyErr{
+			myErr := myerror.NewMyErr(
 				fmt.Errorf("userID is empty"),
 				500,
-			}
+			)
 			myErr.HandleErr(writer)
 			return
 		}
@@ -84,7 +83,7 @@ func (uh userHandler) HandleUserCreate() http.HandlerFunc {
 		// リクエストBodyから更新情報を取得
 		var requestBody userCreateRequest
 		if err := json.NewDecoder(request.Body).Decode(&requestBody); err != nil {
-			myErr := myerror.MyErr{err, 500}
+			myErr := myerror.NewMyErr(err, 500)
 			myErr.HandleErr(writer)
 			return
 		}
@@ -113,17 +112,17 @@ func (uh userHandler) HandleUserUpdate() http.HandlerFunc {
 		ctx := request.Context()
 		userID := dcontext.GetUserIDFromContext(ctx)
 		if userID == "" {
-			myErr := myerror.MyErr{
+			myErr := myerror.NewMyErr(
 				fmt.Errorf("userID is empty"),
 				500,
-			}
+			)
 			myErr.HandleErr(writer)
 			return
 		}
 		// requestBodyから更新情報を取得
 		var requestBody userUpdateRequest
 		if err := json.NewDecoder(request.Body).Decode(&requestBody); err != nil {
-			myErr := myerror.MyErr{err, 500}
+			myErr := myerror.NewMyErr(err, 500)
 			myErr.HandleErr(writer)
 			return
 		}

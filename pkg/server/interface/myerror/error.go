@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"20dojo-online/pkg/http/response"
+	"20dojo-online/pkg/server/interface/response"
 )
 
 // MyErr エラーコードを追加した独自の型
@@ -15,14 +15,14 @@ type MyErr struct {
 	ErrCode int32
 }
 
-// // CreateMyErr MyErrの定義
-// func CreateMyErr(errMsg error, errCode int32) *MyErr {
-// 	myErr := &MyErr{
-// 		ErrMsg:  errMsg,
-// 		ErrCode: errCode,
-// 	}
-// 	return myErr
-// }
+// NewMyErr MyErrの定義
+func NewMyErr(errMsg error, errCode int32) *MyErr {
+	myErr := &MyErr{
+		ErrMsg:  errMsg,
+		ErrCode: errCode,
+	}
+	return myErr
+}
 
 // HandleErr エラー時の処理
 func (myErr MyErr) HandleErr(writer http.ResponseWriter) {

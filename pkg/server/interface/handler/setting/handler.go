@@ -1,16 +1,29 @@
-package handler
+package setting
 
 import (
 	"net/http"
 
 	"20dojo-online/pkg/constant"
-	"20dojo-online/pkg/http/response"
+	"20dojo-online/pkg/server/interface/response"
 )
 
 // TODO: swaggerのdocに反映
 
+// SettingHandler インターフェース　handlerのメソッド一覧
+type SettingHandler interface {
+	HandleSettingGet() http.HandlerFunc
+}
+
+type settingHandler struct {
+}
+
+// NewSettingHandler Handler
+func NewSettingHandler() SettingHandler {
+	return &settingHandler{}
+}
+
 // HandleSettingGet ゲーム設定情報取得処理
-func HandleSettingGet() http.HandlerFunc {
+func (sh settingHandler) HandleSettingGet() http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		// settingGetResponse レスポンス形式
 		type settingGetResponse struct {

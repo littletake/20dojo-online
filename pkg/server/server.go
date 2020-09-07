@@ -5,9 +5,18 @@ import (
 	"net/http"
 
 	"20dojo-online/pkg/server/infra/persistence"
-	"20dojo-online/pkg/server/interface/handler"
+	ch "20dojo-online/pkg/server/interface/handler/collection"
+	gch "20dojo-online/pkg/server/interface/handler/gacha"
+	gh "20dojo-online/pkg/server/interface/handler/game"
+	rh "20dojo-online/pkg/server/interface/handler/ranking"
+	sh "20dojo-online/pkg/server/interface/handler/setting"
+	uh "20dojo-online/pkg/server/interface/handler/user"
 	"20dojo-online/pkg/server/interface/middleware"
-	"20dojo-online/pkg/server/usecase"
+	cu "20dojo-online/pkg/server/usecase/collection"
+	gcu "20dojo-online/pkg/server/usecase/gacha"
+	gu "20dojo-online/pkg/server/usecase/game"
+	ru "20dojo-online/pkg/server/usecase/ranking"
+	uu "20dojo-online/pkg/server/usecase/user"
 )
 
 // Serve HTTPサーバを起動する
@@ -18,18 +27,18 @@ func Serve(addr string) {
 	ucItemPersistence := persistence.NewUCItemPersistence()
 	gachaProbPersistence := persistence.NewGachaProbPersistence()
 
-	userUseCase := usecase.NewUserUseCase(userPersistence)
-	gameUseCase := usecase.NewGameUseCase(userPersistence)
-	rankingUseCase := usecase.NewRankingUseCase(userPersistence)
-	gachaUseCase := usecase.NewGachaUseCase(userPersistence, cItemPersistence, ucItemPersistence, gachaProbPersistence)
-	collectionUseCase := usecase.NewCollectionUseCase(userPersistence, cItemPersistence, ucItemPersistence)
+	userUseCase := uu.NewUserUseCase(userPersistence)
+	gameUseCase := gu.NewGameUseCase(userPersistence)
+	rankingUseCase := ru.NewRankingUseCase(userPersistence)
+	gachaUseCase := gcu.NewGachaUseCase(userPersistence, cItemPersistence, ucItemPersistence, gachaProbPersistence)
+	collectionUseCase := cu.NewCollectionUseCase(userPersistence, cItemPersistence, ucItemPersistence)
 
-	settingHandler := handler.NewSettingHandler()
-	userHandler := handler.NewUserHandler(userUseCase)
-	gameHandler := handler.NewGameHandler(gameUseCase)
-	rankingHandler := handler.NewRankingHandler(rankingUseCase)
-	gachaHandler := handler.NewGachaHandler(gachaUseCase)
-	collectionHandler := handler.NewCollectionHandler(collectionUseCase)
+	settingHandler := sh.NewSettingHandler()
+	userHandler := uh.NewUserHandler(userUseCase)
+	gameHandler := gh.NewGameHandler(gameUseCase)
+	rankingHandler := rh.NewRankingHandler(rankingUseCase)
+	gachaHandler := gch.NewGachaHandler(gachaUseCase)
+	collectionHandler := ch.NewCollectionHandler(collectionUseCase)
 
 	middleware := middleware.NewMiddleware(userUseCase)
 
