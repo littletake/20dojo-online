@@ -1,4 +1,4 @@
-package handler
+package game
 
 import (
 	"encoding/json"
@@ -8,7 +8,7 @@ import (
 	"20dojo-online/pkg/dcontext"
 	"20dojo-online/pkg/server/interface/myerror"
 	"20dojo-online/pkg/server/interface/response"
-	"20dojo-online/pkg/server/usecase"
+	usecase "20dojo-online/pkg/server/usecase/game"
 )
 
 // GameHandler gameにおけるHandler

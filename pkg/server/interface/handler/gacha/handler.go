@@ -1,4 +1,4 @@
-package handler
+package gacha
 
 import (
 	"encoding/json"
@@ -12,7 +12,7 @@ import (
 	"20dojo-online/pkg/server/domain/model"
 	"20dojo-online/pkg/server/interface/myerror"
 	"20dojo-online/pkg/server/interface/response"
-	"20dojo-online/pkg/server/usecase"
+	usecase "20dojo-online/pkg/server/usecase/gacha"
 )
 
 // GachaHandler UserにおけるHandlerのインターフェース

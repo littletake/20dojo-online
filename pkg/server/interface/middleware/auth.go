@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"20dojo-online/pkg/server/interface/myerror"
-	"20dojo-online/pkg/server/usecase"
+	usecase "20dojo-online/pkg/server/usecase/user"
 
 	"20dojo-online/pkg/dcontext"
 )

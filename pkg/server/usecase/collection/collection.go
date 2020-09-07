@@ -37,6 +37,12 @@ type collectionItem struct {
 	HasItem      bool   `json:"hasItem"`
 }
 
+// cItemSlice collectionItemのスライス
+var cItemSlice []*model.CollectionItem
+
+// hasGotcItemSlice table:collection_itemの取得状況
+var hasGotcItemSlice bool
+
 // GetUsersByHighScore Userデータを条件抽出
 func (cu collectionUseCase) GetCollectionSlice(userID string) ([]*model.CollectionItemResult, *myerror.MyErr) {
 	// ユーザデータの取得処理と存在チェックを実装

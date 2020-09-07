@@ -1,4 +1,4 @@
-package handler
+package ranking
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 
 	"20dojo-online/pkg/server/interface/myerror"
 	"20dojo-online/pkg/server/interface/response"
-	"20dojo-online/pkg/server/usecase"
+	usecase "20dojo-online/pkg/server/usecase/ranking"
 )
 
 // RankingHandler UserにおけるHandlerのインターフェース
