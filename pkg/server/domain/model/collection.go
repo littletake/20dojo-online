@@ -1,6 +1,6 @@
 package model
 
-// CollectionItem コレクションアイテム一覧
+// CollectionItemResult コレクションアイテム一覧
 type CollectionItemResult struct {
 	CollectionID string `json:"collectionID"`
 	ItemName     string `json:"name"`

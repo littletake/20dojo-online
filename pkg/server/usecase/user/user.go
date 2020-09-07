@@ -1,5 +1,4 @@
-// Package usecase userシステムのユースケースを満たす処理の流れを実装
-package usecase
+package user
 
 import (
 	"fmt"

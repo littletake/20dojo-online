@@ -1,4 +1,4 @@
-package usecase
+package ranking
 
 import (
 	"fmt"
