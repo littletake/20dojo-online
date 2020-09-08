@@ -3,6 +3,7 @@ package server
 import (
 	"log"
 	"net/http"
+	"time"
 
 	"20dojo-online/pkg/server/infra/persistence"
 	ch "20dojo-online/pkg/server/interface/handler/collection"
@@ -30,7 +31,7 @@ func Serve(addr string) {
 	userUseCase := uu.NewUserUseCase(userPersistence)
 	gameUseCase := gu.NewGameUseCase(userPersistence)
 	rankingUseCase := ru.NewRankingUseCase(userPersistence)
-	gachaUseCase := gcu.NewGachaUseCase(userPersistence, cItemPersistence, ucItemPersistence, gachaProbPersistence)
+	gachaUseCase := gcu.NewGachaUseCase(userPersistence, cItemPersistence, ucItemPersistence, gachaProbPersistence, time.Now().UnixNano())
 	collectionUseCase := cu.NewCollectionUseCase(userPersistence, cItemPersistence, ucItemPersistence)
 
 	settingHandler := sh.NewSettingHandler()
