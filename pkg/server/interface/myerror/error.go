@@ -25,7 +25,7 @@ func NewMyErr(errMsg error, errCode int32) *MyErr {
 }
 
 // HandleErr エラー時の処理
-func (myErr MyErr) HandleErr(writer http.ResponseWriter) {
+func (myErr *MyErr) HandleErr(writer http.ResponseWriter) {
 	if myErr.ErrCode == 400 {
 		log.Println(myErr.ErrMsg)
 		response.BadRequest(writer, myErr.ErrMsg.Error())

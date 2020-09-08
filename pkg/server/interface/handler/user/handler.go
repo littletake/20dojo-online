@@ -33,7 +33,7 @@ func NewUserHandler(uu usecase.UserUseCase) UserHandler {
 }
 
 // HandleUserGet ユーザ情報取得
-func (uh userHandler) HandleUserGet() http.HandlerFunc {
+func (uh *userHandler) HandleUserGet() http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		// userGetResponse ユーザ取得response
 		type userGetResponse struct {
@@ -71,7 +71,7 @@ func (uh userHandler) HandleUserGet() http.HandlerFunc {
 }
 
 // HandleUserCreate　ユーザ作成
-func (uh userHandler) HandleUserCreate() http.HandlerFunc {
+func (uh *userHandler) HandleUserCreate() http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		// userCreateRequest ユーザ作成request
 		type userCreateRequest struct {
@@ -118,7 +118,7 @@ func (uh userHandler) HandleUserCreate() http.HandlerFunc {
 }
 
 // HandleUserUpdate　ユーザ情報更新
-func (uh userHandler) HandleUserUpdate() http.HandlerFunc {
+func (uh *userHandler) HandleUserUpdate() http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		// userUpdateRequest ユーザ更新request
 		type userUpdateRequest struct {

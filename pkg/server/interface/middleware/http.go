@@ -3,12 +3,12 @@ package middleware
 import "net/http"
 
 // Get GETリクエストを処理する
-func (m middleware) Get(apiFunc http.HandlerFunc) http.HandlerFunc {
+func (m *middleware) Get(apiFunc http.HandlerFunc) http.HandlerFunc {
 	return httpMethod(apiFunc, http.MethodGet)
 }
 
 // Post POSTリクエストを処理する
-func (m middleware) Post(apiFunc http.HandlerFunc) http.HandlerFunc {
+func (m *middleware) Post(apiFunc http.HandlerFunc) http.HandlerFunc {
 	return httpMethod(apiFunc, http.MethodPost)
 }
 

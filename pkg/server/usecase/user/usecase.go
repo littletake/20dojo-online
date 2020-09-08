@@ -29,7 +29,7 @@ func NewUserUseCase(ur ur.UserRepository) UserUseCase {
 }
 
 // GetUserByUserID Userデータを条件抽出
-func (uu userUseCase) GetUserByUserID(userID string) (*model.UserL, *myerror.MyErr) {
+func (uu *userUseCase) GetUserByUserID(userID string) (*model.UserL, *myerror.MyErr) {
 	// idと照合するユーザを取得
 	user, err := uu.userRepository.SelectUserByUserID(userID)
 	if err != nil {
@@ -47,7 +47,7 @@ func (uu userUseCase) GetUserByUserID(userID string) (*model.UserL, *myerror.MyE
 }
 
 // GetUserByAuthToken
-func (uu userUseCase) GetUserByAuthToken(token string) (*model.UserL, *myerror.MyErr) {
+func (uu *userUseCase) GetUserByAuthToken(token string) (*model.UserL, *myerror.MyErr) {
 	// tokenと照合するユーザを取得
 	user, err := uu.userRepository.SelectUserByAuthToken(token)
 	if err != nil {
@@ -65,7 +65,7 @@ func (uu userUseCase) GetUserByAuthToken(token string) (*model.UserL, *myerror.M
 }
 
 // RegisterUserFromUserName Userデータを登録
-func (uu userUseCase) RegisterUserFromUserName(userName string, userID string, token string) (string, *myerror.MyErr) {
+func (uu *userUseCase) RegisterUserFromUserName(userName string, userID string, token string) (string, *myerror.MyErr) {
 	// ユーザ作成
 	user := &model.UserL{
 		ID:        userID,
@@ -83,7 +83,7 @@ func (uu userUseCase) RegisterUserFromUserName(userName string, userID string, t
 }
 
 // UpdateUserName UserNameを更新
-func (uu userUseCase) UpdateUserName(userID string, userName string) (*model.UserL, *myerror.MyErr) {
+func (uu *userUseCase) UpdateUserName(userID string, userName string) (*model.UserL, *myerror.MyErr) {
 	// ユーザ取得
 	// idと照合するユーザを取得
 	user, err := uu.userRepository.SelectUserByUserID(userID)

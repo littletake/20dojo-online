@@ -31,7 +31,7 @@ func ChangeScoreToCoin(score int32) int32 {
 }
 
 // UpdateCoinAndHighScore CoinとScoreを更新
-func (gu gameUseCase) UpdateCoinAndHighScore(userID string, score int32) (int32, *myerror.MyErr) {
+func (gu *gameUseCase) UpdateCoinAndHighScore(userID string, score int32) (int32, *myerror.MyErr) {
 	// coinとhighScoreを更新
 	if score < 0 {
 		myErr := myerror.NewMyErr(

@@ -26,7 +26,7 @@ import (
 // 	}
 // }
 
-func (m middleware) Authenticate(nextFunc http.HandlerFunc) http.HandlerFunc {
+func (m *middleware) Authenticate(nextFunc http.HandlerFunc) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 
 		ctx := request.Context()

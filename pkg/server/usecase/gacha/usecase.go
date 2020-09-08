@@ -13,7 +13,8 @@ import (
 	ucm "20dojo-online/pkg/server/domain/model/usercollectionitem"
 	cr "20dojo-online/pkg/server/domain/repository/collectionitem"
 	gr "20dojo-online/pkg/server/domain/repository/gachaprobability"
-	txr "20dojo-online/pkg/server/domain/repository/transaction"
+
+	// txr "20dojo-online/pkg/server/domain/repository/transaction"
 	ur "20dojo-online/pkg/server/domain/repository/user"
 	ucr "20dojo-online/pkg/server/domain/repository/usercollectionitem"
 	"20dojo-online/pkg/server/interface/myerror"
@@ -34,19 +35,18 @@ type gachaUseCase struct {
 	ucItemRepository    ucr.UCItemRepository
 	gachaProbRepository gr.GachaProbRepository
 	seed                int64
-	txRepository        txr.TxRepository
+	// txRepository        txr.TxRepository
 }
 
 // NewGachaUseCase Userデータに関するUseCaseを生成
 func NewGachaUseCase(ur ur.UserRepository, cr cr.CItemRepository,
-	ucr ucr.UCItemRepository, gpr gr.GachaProbRepository, seed int64, txr txr.TxRepository) GachaUseCase {
+	ucr ucr.UCItemRepository, gpr gr.GachaProbRepository, seed int64) GachaUseCase {
 	return &gachaUseCase{
 		userRepository:      ur,
 		cItemRepository:     cr,
 		ucItemRepository:    ucr,
 		gachaProbRepository: gpr,
 		seed:                seed,
-		txRepository:        txr,
 	}
 }
 
@@ -71,7 +71,7 @@ var itemRatioSlice []int32
 var hasGotGachaProb bool
 
 // GetUsersByHighScore Userデータを条件抽出
-func (gu gachaUseCase) Gacha(gachaTimes int32, userID string) ([]*GachaResult, *myerror.MyErr) {
+func (gu *gachaUseCase) Gacha(gachaTimes int32, userID string) ([]*GachaResult, *myerror.MyErr) {
 	// userIDと照合するユーザを取得
 	user, err := gu.userRepository.SelectUserByUserID(userID)
 	if err != nil {
@@ -174,7 +174,8 @@ func (gu gachaUseCase) Gacha(gachaTimes int32, userID string) ([]*GachaResult, *
 	return gachaResultSlice, nil
 }
 
-func (gu gachaUseCase) CreateCItemSlice() *myerror.MyErr {
+// CreateCItemSlice collectionItemSliceを作成
+func (gu *gachaUseCase) CreateCItemSlice() *myerror.MyErr {
 	// 全アイテムの情報をまとめる -> cItemSlice
 	// hasGotItemSlice 一度だけ実行するように制御
 	var err error
@@ -191,7 +192,7 @@ func (gu gachaUseCase) CreateCItemSlice() *myerror.MyErr {
 }
 
 // CreateItemRatioSlice ratioを考慮したアイテム対応表の作成
-func (gu gachaUseCase) CreateItemRatioSlice() *myerror.MyErr {
+func (gu *gachaUseCase) CreateItemRatioSlice() *myerror.MyErr {
 	// gacha_probabilityの情報を取得
 	if !hasGotGachaProb {
 		gachaProbSlice, err := gu.gachaProbRepository.SelectAllGachaProb()
@@ -211,7 +212,7 @@ func (gu gachaUseCase) CreateItemRatioSlice() *myerror.MyErr {
 }
 
 // GetItems 乱数によるアイテムの取得 -> 実行結果: gettingItemSlice
-func (gu gachaUseCase) GetItems(gachaTimes int32) []string {
+func (gu *gachaUseCase) GetItems(gachaTimes int32) []string {
 	// gettingItemSlice 当てたアイテムのIDのslice
 	rand.Seed(gu.seed)
 	gettingItemSlice := make([]string, gachaTimes)
@@ -224,7 +225,7 @@ func (gu gachaUseCase) GetItems(gachaTimes int32) []string {
 }
 
 // CreateGachaResults ガチャ実行結果の作成
-func (gu gachaUseCase) CreateGachaResults(gettingItemSlice []string, hasGotItemMap map[string]bool, userID string) ([]*GachaResult, []*ucm.UserCollectionItem) {
+func (gu *gachaUseCase) CreateGachaResults(gettingItemSlice []string, hasGotItemMap map[string]bool, userID string) ([]*GachaResult, []*ucm.UserCollectionItem) {
 	gachaResultSlice := make([]*GachaResult, len(gettingItemSlice))
 	newItemSlice := []*ucm.UserCollectionItem{}
 	for i, gettingItem := range gettingItemSlice {
@@ -256,7 +257,7 @@ func (gu gachaUseCase) CreateGachaResults(gettingItemSlice []string, hasGotItemM
 }
 
 // TODO: 未完成
-func (gu gachaUseCase) BulkInsertAndUpdate(newItemSlice []*ucm.UserCollectionItem, user *um.UserL, tx *sql.Tx) error {
+func (gu *gachaUseCase) BulkInsertAndUpdate(newItemSlice []*ucm.UserCollectionItem, user *um.UserL, tx *sql.Tx) error {
 	// 3-1. バルクインサート
 	if len(newItemSlice) != 0 {
 		if err := gu.ucItemRepository.BulkInsertUCItemSlice(newItemSlice, tx); err != nil {

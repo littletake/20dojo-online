@@ -27,7 +27,7 @@ func NewRankingUseCase(ur ur.UserRepository) RankingUseCase {
 }
 
 // GetUsersByHighScore Userデータを条件抽出
-func (ru rankingUseCase) GetUsersByHighScore(startNum int32) ([]*model.UserL, *myerror.MyErr) {
+func (ru *rankingUseCase) GetUsersByHighScore(startNum int32) ([]*model.UserL, *myerror.MyErr) {
 	// idと照合するユーザを取得
 	userSlice, err := ru.userRepository.SelectUsersByHighScore(constant.RankingListNumber, startNum)
 	if err != nil {

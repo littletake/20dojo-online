@@ -28,7 +28,7 @@ func NewCollectionHandler(cu usecase.CollectionUseCase) CollectionHandler {
 }
 
 // HandleCollectionList ガチャ実行
-func (ch collectionHandler) HandleCollectionList() http.HandlerFunc {
+func (ch *collectionHandler) HandleCollectionList() http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		// collectionListResponse レスポンス形式
 		type collectionListResponse struct {

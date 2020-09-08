@@ -29,7 +29,7 @@ func NewGameHandler(gu usecase.GameUseCase) GameHandler {
 }
 
 // HandleGameFinish インゲーム終了処理
-func (gh gameHandler) HandleGameFinish() http.HandlerFunc {
+func (gh *gameHandler) HandleGameFinish() http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		// GameFinishRequest ゲーム終了request
 		type GameFinishRequest struct {

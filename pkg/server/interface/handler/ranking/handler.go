@@ -28,7 +28,7 @@ func NewRankingHandler(ru usecase.RankingUseCase) RankingHandler {
 }
 
 // HandleRankingList ランキング取得
-func (rh rankingHandler) HandleRankingList() http.HandlerFunc {
+func (rh *rankingHandler) HandleRankingList() http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		// rankInfo ランキング情報
 		type rankInfo struct {

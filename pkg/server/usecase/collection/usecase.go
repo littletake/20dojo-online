@@ -47,7 +47,7 @@ var cItemSlice []*model.CollectionItem
 var hasGotcItemSlice bool
 
 // GetUsersByHighScore Userデータを条件抽出
-func (cu collectionUseCase) GetCollectionSlice(userID string) ([]*CollectionItemResult, *myerror.MyErr) {
+func (cu *collectionUseCase) GetCollectionSlice(userID string) ([]*CollectionItemResult, *myerror.MyErr) {
 	// ユーザデータの取得処理と存在チェックを実装
 	user, err := cu.userRepository.SelectUserByUserID(userID)
 	if err != nil {

@@ -23,7 +23,7 @@ func NewSettingHandler() SettingHandler {
 }
 
 // HandleSettingGet ゲーム設定情報取得処理
-func (sh settingHandler) HandleSettingGet() http.HandlerFunc {
+func (sh *settingHandler) HandleSettingGet() http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		// settingGetResponse レスポンス形式
 		type settingGetResponse struct {

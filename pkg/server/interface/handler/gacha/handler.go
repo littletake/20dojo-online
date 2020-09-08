@@ -30,7 +30,7 @@ func NewGachaHandler(gu usecase.GachaUseCase) GachaHandler {
 }
 
 // HandleGachaDraw ガチャ実行
-func (gh gachaHandler) HandleGachaDraw() http.HandlerFunc {
+func (gh *gachaHandler) HandleGachaDraw() http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		// gachaDrawRequest リクエスト形式
 		type gachaDrawRequest struct {
