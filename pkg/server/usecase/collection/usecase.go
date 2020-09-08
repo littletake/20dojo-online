@@ -4,7 +4,10 @@ import (
 	"fmt"
 
 	"20dojo-online/pkg/server/domain/model"
-	"20dojo-online/pkg/server/domain/repository"
+	cr "20dojo-online/pkg/server/domain/repository/collection_item"
+	ur "20dojo-online/pkg/server/domain/repository/user"
+	ucr "20dojo-online/pkg/server/domain/repository/user_collection_item"
+
 	"20dojo-online/pkg/server/interface/myerror"
 )
 
@@ -14,14 +17,14 @@ type CollectionUseCase interface {
 }
 
 type collectionUseCase struct {
-	userRepository   repository.UserRepository
-	cItemRepository  repository.CItemRepository
-	ucItemRepository repository.UCItemRepository
+	userRepository   ur.UserRepository
+	cItemRepository  cr.CItemRepository
+	ucItemRepository ucr.UCItemRepository
 }
 
 // NewCollectionUseCase UseCaseを生成
-func NewCollectionUseCase(ur repository.UserRepository, cr repository.CItemRepository,
-	ucr repository.UCItemRepository) CollectionUseCase {
+func NewCollectionUseCase(ur ur.UserRepository, cr cr.CItemRepository,
+	ucr ucr.UCItemRepository) CollectionUseCase {
 	return &collectionUseCase{
 		userRepository:   ur,
 		cItemRepository:  cr,

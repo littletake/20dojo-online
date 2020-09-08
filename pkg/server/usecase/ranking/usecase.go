@@ -5,7 +5,8 @@ import (
 
 	"20dojo-online/pkg/constant"
 	"20dojo-online/pkg/server/domain/model"
-	"20dojo-online/pkg/server/domain/repository"
+	ur "20dojo-online/pkg/server/domain/repository/user"
+
 	"20dojo-online/pkg/server/interface/myerror"
 )
 
@@ -15,11 +16,11 @@ type RankingUseCase interface {
 }
 
 type rankingUseCase struct {
-	userRepository repository.UserRepository
+	userRepository ur.UserRepository
 }
 
 // NewRankingUseCase Userデータに関するUseCaseを生成
-func NewRankingUseCase(ur repository.UserRepository) RankingUseCase {
+func NewRankingUseCase(ur ur.UserRepository) RankingUseCase {
 	return &rankingUseCase{
 		userRepository: ur,
 	}

@@ -8,7 +8,10 @@ import (
 	"20dojo-online/pkg/constant"
 	"20dojo-online/pkg/db"
 	"20dojo-online/pkg/server/domain/model"
-	"20dojo-online/pkg/server/domain/repository"
+	cr "20dojo-online/pkg/server/domain/repository/collection_item"
+	gr "20dojo-online/pkg/server/domain/repository/gacha_probability"
+	ur "20dojo-online/pkg/server/domain/repository/user"
+	ucr "20dojo-online/pkg/server/domain/repository/user_collection_item"
 	"20dojo-online/pkg/server/interface/myerror"
 )
 
@@ -16,18 +19,20 @@ import (
 type GachaUseCase interface {
 	Gacha(gachaTimes int32, userID string) ([]*model.GachaResult, *myerror.MyErr)
 	CreateItemRatioSlice() *myerror.MyErr
+	GetItems(gachaTimes int32) []string
+	CreateGachaResults(gettingItemSlice []string, hasGotItemMap map[string]bool, userID string) ([]*model.GachaResult, []*model.UserCollectionItem)
 }
 
 type gachaUseCase struct {
-	userRepository      repository.UserRepository
-	cItemRepository     repository.CItemRepository
-	ucItemRepository    repository.UCItemRepository
-	gachaProbRepository repository.GachaProbRepository
+	userRepository      ur.UserRepository
+	cItemRepository     cr.CItemRepository
+	ucItemRepository    ucr.UCItemRepository
+	gachaProbRepository gr.GachaProbRepository
 }
 
 // NewGachaUseCase Userデータに関するUseCaseを生成
-func NewGachaUseCase(ur repository.UserRepository, cr repository.CItemRepository,
-	ucr repository.UCItemRepository, gpr repository.GachaProbRepository) GachaUseCase {
+func NewGachaUseCase(ur ur.UserRepository, cr cr.CItemRepository,
+	ucr ucr.UCItemRepository, gpr gr.GachaProbRepository) GachaUseCase {
 	return &gachaUseCase{
 		userRepository:      ur,
 		cItemRepository:     cr,
@@ -112,43 +117,45 @@ func (gu gachaUseCase) Gacha(gachaTimes int32, userID string) ([]*model.GachaRes
 	// --- ガチャの実行
 	// 1. 乱数によるアイテムの取得 -> 実行結果: gettingItemSlice
 	// gettingItemSlice 当てたアイテムのIDのslice
-	gettingItemSlice := make([]string, gachaTimes)
-	for i := int32(0); i < gachaTimes; i++ {
-		randomNum := rand.Int31n(itemRatioSlice[len(itemRatioSlice)-1])
-		index := detectNumber(randomNum)
-		// TODO: 以下のitemIDを取得する部分，collectionItemSliceではなくgachaProbで代用できない??
-		gettingItemSlice[i] = cItemSlice[index].ItemID
-	}
+	gettingItemSlice := gu.GetItems(gachaTimes)
+	// gettingItemSlice := make([]string, gachaTimes)
+	// for i := int32(0); i < gachaTimes; i++ {
+	// 	randomNum := rand.Int31n(itemRatioSlice[len(itemRatioSlice)-1])
+	// 	index := detectNumber(randomNum)
+	// 	gettingItemSlice[i] = cItemSlice[index].ItemID
+	// }
 	// 2. アイテムの照合
-	gachaResultSlice := make([]*model.GachaResult, gachaTimes)
-	var newItemSlice []*model.UserCollectionItem
-	for i, gettingItem := range gettingItemSlice {
-		for _, item := range cItemSlice {
-			if gettingItem == item.ItemID {
-				// レスポンス用に整形
-				result := model.GachaResult{
-					CollectionID: item.ItemID,
-					ItemName:     item.ItemName,
-					Rarity:       item.Rarity,
-					IsNew:        !hasGotItemMap[item.ItemID],
-				}
-				gachaResultSlice[i] = &result
-				// 既出itemの確認
-				if !hasGotItemMap[item.ItemID] {
-					// 既出アイテム一覧に追加
-					hasGotItemMap[item.ItemID] = true
-					newItem := model.UserCollectionItem{
-						UserID:           userID,
-						CollectionItemID: item.ItemID,
-					}
-					newItemSlice = append(newItemSlice, &newItem)
-				}
-			}
-		}
-	}
+	gachaResultSlice, newItemSlice := gu.CreateGachaResults(gettingItemSlice, hasGotItemMap, userID)
+	// gachaResultSlice := make([]*model.GachaResult, gachaTimes)
+	// var newItemSlice []*model.UserCollectionItem
+	// for i, gettingItem := range gettingItemSlice {
+	// 	for _, item := range cItemSlice {
+	// 		if gettingItem == item.ItemID {
+	// 			// レスポンス用に整形
+	// 			result := model.GachaResult{
+	// 				CollectionID: item.ItemID,
+	// 				ItemName:     item.ItemName,
+	// 				Rarity:       item.Rarity,
+	// 				IsNew:        !hasGotItemMap[item.ItemID],
+	// 			}
+	// 			gachaResultSlice[i] = &result
+	// 			// 既出itemの確認
+	// 			if !hasGotItemMap[item.ItemID] {
+	// 				// 既出アイテム一覧に追加
+	// 				hasGotItemMap[item.ItemID] = true
+	// 				newItem := model.UserCollectionItem{
+	// 					UserID:           userID,
+	// 					CollectionItemID: item.ItemID,
+	// 				}
+	// 				newItemSlice = append(newItemSlice, &newItem)
+	// 			}
+	// 		}
+	// 	}
+	// }
 	// TODO: トランザクションのテスト作成
 	// 3. トランザクション開始（複数DB操作）
 	tx, err := db.Conn.Begin()
+
 	if err != nil {
 		myErr := myerror.NewMyErr(err, 500)
 		return nil, myErr
@@ -184,6 +191,7 @@ func (gu gachaUseCase) Gacha(gachaTimes int32, userID string) ([]*model.GachaRes
 		myErr := myerror.NewMyErr(err, 500)
 		return nil, myErr
 	}
+
 	return gachaResultSlice, nil
 }
 
@@ -204,6 +212,50 @@ func (gu gachaUseCase) CreateItemRatioSlice() *myerror.MyErr {
 	return nil
 }
 
+// GetItems 乱数によるアイテムの取得 -> 実行結果: gettingItemSlice
+func (gu gachaUseCase) GetItems(gachaTimes int32) []string {
+	// gettingItemSlice 当てたアイテムのIDのslice
+	gettingItemSlice := make([]string, gachaTimes)
+	for i := int32(0); i < gachaTimes; i++ {
+		randomNum := rand.Int31n(itemRatioSlice[len(itemRatioSlice)-1])
+		index := detectNumber(randomNum)
+		gettingItemSlice[i] = cItemSlice[index].ItemID
+	}
+	return gettingItemSlice
+}
+
+// CreateGachaResults ガチャ実行結果の作成
+func (gu gachaUseCase) CreateGachaResults(gettingItemSlice []string, hasGotItemMap map[string]bool, userID string) ([]*model.GachaResult, []*model.UserCollectionItem) {
+	gachaResultSlice := make([]*model.GachaResult, len(gettingItemSlice))
+	newItemSlice := []*model.UserCollectionItem{}
+	for i, gettingItem := range gettingItemSlice {
+		for _, item := range cItemSlice {
+			if gettingItem == item.ItemID {
+				// レスポンス用に整形
+				result := model.GachaResult{
+					CollectionID: item.ItemID,
+					ItemName:     item.ItemName,
+					Rarity:       item.Rarity,
+					IsNew:        !hasGotItemMap[item.ItemID],
+				}
+				gachaResultSlice[i] = &result
+				// 既出itemの確認
+				if !hasGotItemMap[item.ItemID] {
+					// 既出アイテム一覧に追加
+					hasGotItemMap[item.ItemID] = true
+					newItem := model.UserCollectionItem{
+						UserID:           userID,
+						CollectionItemID: item.ItemID,
+					}
+					newItemSlice = append(newItemSlice, &newItem)
+				}
+			}
+		}
+	}
+	return gachaResultSlice, newItemSlice
+
+}
+
 // TODO: 当たっているかどうかを判定する関数を作成すること
 // detectNumber 適している番号を見つける
 func detectNumber(random int32) int32 {
@@ -217,6 +269,8 @@ func detectNumber(random int32) int32 {
 	return num
 }
 
+// createRandomNums ランダム数の作成（テスト用に切り出す）
+// func (gu)
 // // TODO: 役割ごとにメソッドを分けたい（分けようとして失敗）
 // // getItemSlice アイテム取得
 // func (gu gachaUseCase) getItemSlice(gachaTimes int32) ([]string, *myerror.MyErr) {

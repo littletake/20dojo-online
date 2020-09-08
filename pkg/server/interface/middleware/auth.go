@@ -6,26 +6,25 @@ import (
 	"net/http"
 
 	"20dojo-online/pkg/server/interface/myerror"
-	usecase "20dojo-online/pkg/server/usecase/user"
 
 	"20dojo-online/pkg/dcontext"
 )
 
-// Middleware middlewareのインターフェース
-type Middleware interface {
-	Authenticate(http.HandlerFunc) http.HandlerFunc
-}
+// // Middleware middlewareのインターフェース
+// type Middleware interface {
+// 	Authenticate(http.HandlerFunc) http.HandlerFunc
+// }
 
-type middleware struct {
-	userUseCase usecase.UserUseCase
-}
+// type middleware struct {
+// 	userUseCase usecase.UserUseCase
+// }
 
-// NewMiddleware userUseCaseと疎通
-func NewMiddleware(uu usecase.UserUseCase) Middleware {
-	return &middleware{
-		userUseCase: uu,
-	}
-}
+// // NewMiddleware userUseCaseと疎通
+// func NewMiddleware(uu usecase.UserUseCase) Middleware {
+// 	return &middleware{
+// 		userUseCase: uu,
+// 	}
+// }
 
 func (m middleware) Authenticate(nextFunc http.HandlerFunc) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {

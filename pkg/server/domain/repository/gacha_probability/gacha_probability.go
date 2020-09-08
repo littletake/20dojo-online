@@ -1,4 +1,4 @@
-package repository
+package gacha_probability
 
 import "20dojo-online/pkg/server/domain/model"
 

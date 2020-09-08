@@ -3,10 +3,9 @@ package user
 import (
 	"fmt"
 
-	"github.com/google/uuid"
-
 	"20dojo-online/pkg/server/domain/model"
-	"20dojo-online/pkg/server/domain/repository"
+	ur "20dojo-online/pkg/server/domain/repository/user"
+
 	"20dojo-online/pkg/server/interface/myerror"
 )
 
@@ -14,16 +13,16 @@ import (
 type UserUseCase interface {
 	GetUserByUserID(userID string) (*model.UserL, *myerror.MyErr)
 	GetUserByAuthToken(token string) (*model.UserL, *myerror.MyErr)
-	RegisterUserFromUserName(userName string) (string, *myerror.MyErr)
-	UpdateUserName(userID string, userName string) *myerror.MyErr
+	RegisterUserFromUserName(userName string, userID string, token string) (string, *myerror.MyErr)
+	UpdateUserName(userID string, userName string) (*model.UserL, *myerror.MyErr)
 }
 
 type userUseCase struct {
-	userRepository repository.UserRepository
+	userRepository ur.UserRepository
 }
 
 // NewUserUseCase Userデータに関するUseCaseを生成
-func NewUserUseCase(ur repository.UserRepository) UserUseCase {
+func NewUserUseCase(ur ur.UserRepository) UserUseCase {
 	return &userUseCase{
 		userRepository: ur,
 	}
@@ -66,30 +65,17 @@ func (uu userUseCase) GetUserByAuthToken(token string) (*model.UserL, *myerror.M
 }
 
 // RegisterUserFromUserName Userデータを登録
-func (uu userUseCase) RegisterUserFromUserName(userName string) (string, *myerror.MyErr) {
-	// TODO: どのIDの生成でエラーが生じたのかをエラーメッセージに添付すること
-	// UUIDでユーザIDを生成する
-	userID, err := uuid.NewRandom()
-	if err != nil {
-		myErr := myerror.NewMyErr(err, 500)
-		return "", myErr
-	}
-	// UUIDで認証トークンを生成する
-	token, err := uuid.NewRandom()
-	if err != nil {
-		myErr := myerror.NewMyErr(err, 500)
-		return "", myErr
-	}
+func (uu userUseCase) RegisterUserFromUserName(userName string, userID string, token string) (string, *myerror.MyErr) {
 	// ユーザ作成
 	user := &model.UserL{
-		ID:        userID.String(),
-		AuthToken: token.String(),
+		ID:        userID,
+		AuthToken: token,
 		Name:      userName,
 		HighScore: 0,
 		Coin:      0,
 	}
 	// ユーザ登録
-	if err = uu.userRepository.InsertUser(user); err != nil {
+	if err := uu.userRepository.InsertUser(user); err != nil {
 		myErr := myerror.NewMyErr(err, 500)
 		return "", myErr
 	}
@@ -97,18 +83,27 @@ func (uu userUseCase) RegisterUserFromUserName(userName string) (string, *myerro
 }
 
 // UpdateUserName UserNameを更新
-func (uu userUseCase) UpdateUserName(userID string, userName string) *myerror.MyErr {
+func (uu userUseCase) UpdateUserName(userID string, userName string) (*model.UserL, *myerror.MyErr) {
 	// ユーザ取得
-	user, myErr := uu.GetUserByUserID(userID)
-	if myErr != nil {
-		return myErr
+	// idと照合するユーザを取得
+	user, err := uu.userRepository.SelectUserByUserID(userID)
+	if err != nil {
+		myErr := myerror.NewMyErr(err, 500)
+		return nil, myErr
+	}
+	if user == nil {
+		myErr := myerror.NewMyErr(
+			fmt.Errorf("user not found"),
+			500,
+		)
+		return nil, myErr
 	}
 	// ユーザ更新
 	user.Name = userName
 	// 更新を保存
 	if err := uu.userRepository.UpdateUserByUser(user); err != nil {
 		myErr := myerror.NewMyErr(err, 500)
-		return myErr
+		return nil, myErr
 	}
-	return nil
+	return user, nil
 }
