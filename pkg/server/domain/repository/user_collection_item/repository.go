@@ -1,4 +1,4 @@
-package repository
+package user_collection_item
 
 import (
 	"database/sql"

@@ -8,7 +8,7 @@ import (
 
 	"20dojo-online/pkg/db"
 	"20dojo-online/pkg/server/domain/model"
-	"20dojo-online/pkg/server/domain/repository"
+	repository "20dojo-online/pkg/server/domain/repository/user_collection_item"
 )
 
 type ucItemPersistence struct{}

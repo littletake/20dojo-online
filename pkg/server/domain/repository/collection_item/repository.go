@@ -1,4 +1,4 @@
-package repository
+package collection_item
 
 import "20dojo-online/pkg/server/domain/model"
 

@@ -1,14 +1,17 @@
 package gacha
 
 import (
+	"database/sql"
 	"fmt"
-	"log"
 	"math/rand"
 
 	"20dojo-online/pkg/constant"
-	"20dojo-online/pkg/db"
 	"20dojo-online/pkg/server/domain/model"
-	"20dojo-online/pkg/server/domain/repository"
+	cr "20dojo-online/pkg/server/domain/repository/collection_item"
+	gr "20dojo-online/pkg/server/domain/repository/gacha_probability"
+	txr "20dojo-online/pkg/server/domain/repository/transaction"
+	ur "20dojo-online/pkg/server/domain/repository/user"
+	ucr "20dojo-online/pkg/server/domain/repository/user_collection_item"
 	"20dojo-online/pkg/server/interface/myerror"
 )
 
@@ -16,25 +19,36 @@ import (
 type GachaUseCase interface {
 	Gacha(gachaTimes int32, userID string) ([]*model.GachaResult, *myerror.MyErr)
 	CreateItemRatioSlice() *myerror.MyErr
+	CreateCItemSlice() *myerror.MyErr
+	GetItems(gachaTimes int32) []string
+	CreateGachaResults(gettingItemSlice []string, hasGotItemMap map[string]bool, userID string) ([]*model.GachaResult, []*model.UserCollectionItem)
 }
 
 type gachaUseCase struct {
-	userRepository      repository.UserRepository
-	cItemRepository     repository.CItemRepository
-	ucItemRepository    repository.UCItemRepository
-	gachaProbRepository repository.GachaProbRepository
+	userRepository      ur.UserRepository
+	cItemRepository     cr.CItemRepository
+	ucItemRepository    ucr.UCItemRepository
+	gachaProbRepository gr.GachaProbRepository
+	seed                int64
+	txRepository        txr.TxRepository
 }
 
 // NewGachaUseCase Userデータに関するUseCaseを生成
-func NewGachaUseCase(ur repository.UserRepository, cr repository.CItemRepository,
-	ucr repository.UCItemRepository, gpr repository.GachaProbRepository) GachaUseCase {
+func NewGachaUseCase(ur ur.UserRepository, cr cr.CItemRepository,
+	ucr ucr.UCItemRepository, gpr gr.GachaProbRepository, seed int64, txr txr.TxRepository) GachaUseCase {
 	return &gachaUseCase{
 		userRepository:      ur,
 		cItemRepository:     cr,
 		ucItemRepository:    ucr,
 		gachaProbRepository: gpr,
+		seed:                seed,
+		txRepository:        txr,
 	}
 }
+
+// // init 乱数のseed定義
+// func init() {
+// }
 
 // cItemSlice collectionItemのスライス
 var cItemSlice []*model.CollectionItem
@@ -92,36 +106,86 @@ func (gu gachaUseCase) Gacha(gachaTimes int32, userID string) ([]*model.GachaRes
 	}
 	// 全アイテムの情報をまとめる -> cItemSlice
 	// hasGotItemSlice 一度だけ実行するように制御
-	if !hasGotcItemSlice {
-		cItemSlice, err = gu.cItemRepository.SelectAllCollectionItem()
-		if err != nil {
-			myErr := myerror.NewMyErr(err, 500)
-			return nil, myErr
-		}
-		hasGotcItemSlice = true
+	if myErr := gu.CreateCItemSlice(); myErr != nil {
+		return nil, myErr
 	}
 	// ratioを考慮したアイテム対応表の作成
 	// hasGotGachaProb 一度だけ実行するように制御
-	if !hasGotGachaProb {
-		if myErr := gu.CreateItemRatioSlice(); myErr != nil {
-			return nil, myErr
-		}
-		hasGotGachaProb = true
+	if myErr := gu.CreateItemRatioSlice(); myErr != nil {
+		return nil, myErr
 	}
 
 	// --- ガチャの実行
 	// 1. 乱数によるアイテムの取得 -> 実行結果: gettingItemSlice
 	// gettingItemSlice 当てたアイテムのIDのslice
+	gettingItemSlice := gu.GetItems(gachaTimes)
+
+	// 2. アイテムの照合
+	gachaResultSlice, newItemSlice := gu.CreateGachaResults(gettingItemSlice, hasGotItemMap, userID)
+
+	// TODO: できていない（結局txが必要になってしまう）
+	// 3. トランザクション開始（複数DB操作）
+	if err = gu.txRepository.Transaction(gu.BulkInsertAndUpdate(newItemSlice, user, tx)); err != nil {
+		myErr := myerror.NewMyErr(err, 500)
+		return nil, myErr
+	}
+
+	return gachaResultSlice, nil
+}
+
+func (gu gachaUseCase) CreateCItemSlice() *myerror.MyErr {
+	// 全アイテムの情報をまとめる -> cItemSlice
+	// hasGotItemSlice 一度だけ実行するように制御
+	var err error
+	if !hasGotcItemSlice {
+		cItemSlice, err = gu.cItemRepository.SelectAllCollectionItem()
+		if err != nil {
+			myErr := myerror.NewMyErr(err, 500)
+			return myErr
+		}
+		hasGotcItemSlice = true
+		return nil
+	}
+	return nil
+}
+
+// CreateItemRatioSlice ratioを考慮したアイテム対応表の作成
+func (gu gachaUseCase) CreateItemRatioSlice() *myerror.MyErr {
+	// gacha_probabilityの情報を取得
+	if !hasGotGachaProb {
+		gachaProbSlice, err := gu.gachaProbRepository.SelectAllGachaProb()
+		if err != nil {
+			myErr := myerror.NewMyErr(err, 500)
+			return myErr
+		}
+		itemRatioSlice = make([]int32, len(gachaProbSlice))
+		count := int32(0)
+		for i, item := range gachaProbSlice {
+			count += item.Ratio
+			itemRatioSlice[i] = count
+		}
+		hasGotGachaProb = true
+	}
+	return nil
+}
+
+// GetItems 乱数によるアイテムの取得 -> 実行結果: gettingItemSlice
+func (gu gachaUseCase) GetItems(gachaTimes int32) []string {
+	// gettingItemSlice 当てたアイテムのIDのslice
+	rand.Seed(gu.seed)
 	gettingItemSlice := make([]string, gachaTimes)
 	for i := int32(0); i < gachaTimes; i++ {
 		randomNum := rand.Int31n(itemRatioSlice[len(itemRatioSlice)-1])
 		index := detectNumber(randomNum)
-		// TODO: 以下のitemIDを取得する部分，collectionItemSliceではなくgachaProbで代用できない??
 		gettingItemSlice[i] = cItemSlice[index].ItemID
 	}
-	// 2. アイテムの照合
-	gachaResultSlice := make([]*model.GachaResult, gachaTimes)
-	var newItemSlice []*model.UserCollectionItem
+	return gettingItemSlice
+}
+
+// CreateGachaResults ガチャ実行結果の作成
+func (gu gachaUseCase) CreateGachaResults(gettingItemSlice []string, hasGotItemMap map[string]bool, userID string) ([]*model.GachaResult, []*model.UserCollectionItem) {
+	gachaResultSlice := make([]*model.GachaResult, len(gettingItemSlice))
+	newItemSlice := []*model.UserCollectionItem{}
 	for i, gettingItem := range gettingItemSlice {
 		for _, item := range cItemSlice {
 			if gettingItem == item.ItemID {
@@ -146,60 +210,21 @@ func (gu gachaUseCase) Gacha(gachaTimes int32, userID string) ([]*model.GachaRes
 			}
 		}
 	}
-	// TODO: トランザクションのテスト作成
-	// 3. トランザクション開始（複数DB操作）
-	tx, err := db.Conn.Begin()
-	if err != nil {
-		myErr := myerror.NewMyErr(err, 500)
-		return nil, myErr
-	}
-	// TODO: 書き方再検討
-	defer func() {
-		if err := recover(); err != nil {
-			log.Println("!! PANIC !!")
-			log.Println(err)
-			if rollbackErr := tx.Rollback(); rollbackErr != nil {
-				log.Println("failed to Rollback")
-				log.Println(rollbackErr)
-				// myErr := CreateMyErr(rollbackErr, 500)
-				// return nil, myErr
-			}
-		}
-		// TODO: ここにpanic()を書くとAPIが二回実行される
-		// panic(err)
-	}()
+	return gachaResultSlice, newItemSlice
+
+}
+
+// TODO: 未完成
+func (gu gachaUseCase) BulkInsertAndUpdate(newItemSlice []*model.UserCollectionItem, user *model.UserL, tx *sql.Tx) error {
 	// 3-1. バルクインサート
 	if len(newItemSlice) != 0 {
 		if err := gu.ucItemRepository.BulkInsertUCItemSlice(newItemSlice, tx); err != nil {
-			myErr := myerror.NewMyErr(err, 500)
-			return nil, myErr
+			return err
 		}
 	}
 	// 3-2. ユーザの保持コイン更新
 	if err := gu.userRepository.UpdateUserByUserInTx(user, tx); err != nil {
-		myErr := myerror.NewMyErr(err, 500)
-		return nil, myErr
-	}
-	if err := tx.Commit(); err != nil {
-		myErr := myerror.NewMyErr(err, 500)
-		return nil, myErr
-	}
-	return gachaResultSlice, nil
-}
-
-// CreateItemRatioSlice ratioを考慮したアイテム対応表の作成
-func (gu gachaUseCase) CreateItemRatioSlice() *myerror.MyErr {
-	// gacha_probabilityの情報を取得
-	gachaProbSlice, err := gu.gachaProbRepository.SelectAllGachaProb()
-	if err != nil {
-		myErr := myerror.NewMyErr(err, 500)
-		return myErr
-	}
-	itemRatioSlice = make([]int32, len(gachaProbSlice))
-	count := int32(0)
-	for i, item := range gachaProbSlice {
-		count += item.Ratio
-		itemRatioSlice[i] = count
+		return err
 	}
 	return nil
 }
@@ -216,35 +241,3 @@ func detectNumber(random int32) int32 {
 	}
 	return num
 }
-
-// // TODO: 役割ごとにメソッドを分けたい（分けようとして失敗）
-// // getItemSlice アイテム取得
-// func (gu gachaUseCase) getItemSlice(gachaTimes int32) ([]string, *myerror.MyErr) {
-// 	// 1. ratioを考慮したアイテム対応表の作成
-// 	var gachaProbSlice []*model.GachaProb
-// 	if !hasGotGachaProb {
-// 		// gacha_probabilityの情報を取得
-// 		gachaProbSlice, err := gu.gachaProbRepository.SelectAllGachaProb()
-// 		if err != nil {
-// 			myErr := myerror.MyErr{err, 500}
-// 			return nil, &myErr
-// 		}
-// 		itemRatioSlice = make([]int32, len(gachaProbSlice))
-// 		count := int32(0)
-// 		for i, item := range gachaProbSlice {
-// 			count += item.Ratio
-// 			itemRatioSlice[i] = count
-// 		}
-// 		hasGotGachaProb = true
-// 	}
-// 	// 2. 乱数生成して対応表からitemIDを特定
-// 	gettingItemSlice := make([]string, gachaTimes)
-// 	for i := int32(0); i < gachaTimes; i++ {
-// 		randomNum := rand.Int31n(itemRatioSlice[len(itemRatioSlice)-1])
-// 		index := detectNumber(randomNum)
-// 		fmt.Print(gachaProbSlice)
-// 		fmt.Print(index)
-// 		gettingItemSlice[i] = gachaProbSlice[index].CollectionItemID
-// 	}
-// 	return gettingItemSlice, nil
-// }

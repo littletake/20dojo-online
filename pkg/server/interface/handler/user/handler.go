@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/google/uuid"
+
 	"20dojo-online/pkg/dcontext"
 	"20dojo-online/pkg/server/interface/myerror"
 	"20dojo-online/pkg/server/interface/response"
@@ -88,7 +90,22 @@ func (uh userHandler) HandleUserCreate() http.HandlerFunc {
 			return
 		}
 		// ユーザを登録
-		authToken, myErr := uh.userUseCase.RegisterUserFromUserName(requestBody.Name)
+		// UUIDでユーザIDを生成する
+		userID, err := uuid.NewRandom()
+		if err != nil {
+			myErr := myerror.NewMyErr(err, 500)
+			myErr.HandleErr(writer)
+			return
+		}
+		// UUIDで認証トークンを生成する
+		token, err := uuid.NewRandom()
+		if err != nil {
+			myErr := myerror.NewMyErr(err, 500)
+			myErr.HandleErr(writer)
+			return
+		}
+
+		authToken, myErr := uh.userUseCase.RegisterUserFromUserName(requestBody.Name, userID.String(), token.String())
 		if myErr != nil {
 			myErr.HandleErr(writer)
 			return
@@ -127,7 +144,8 @@ func (uh userHandler) HandleUserUpdate() http.HandlerFunc {
 			return
 		}
 		// userNameを更新
-		if myErr := uh.userUseCase.UpdateUserName(userID, requestBody.Name); myErr != nil {
+		_, myErr := uh.userUseCase.UpdateUserName(userID, requestBody.Name)
+		if myErr != nil {
 			myErr.HandleErr(writer)
 			return
 		}

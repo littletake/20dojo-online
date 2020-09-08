@@ -3,7 +3,8 @@ package game
 import (
 	"fmt"
 
-	"20dojo-online/pkg/server/domain/repository"
+	ur "20dojo-online/pkg/server/domain/repository/user"
+
 	"20dojo-online/pkg/server/interface/myerror"
 )
 
@@ -12,11 +13,11 @@ type GameUseCase interface {
 	UpdateCoinAndHighScore(userID string, score int32) (int32, *myerror.MyErr)
 }
 type gameUseCase struct {
-	userRepository repository.UserRepository
+	userRepository ur.UserRepository
 }
 
 // NewGameUseCase GameUsecaseの生成
-func NewGameUseCase(ur repository.UserRepository) GameUseCase {
+func NewGameUseCase(ur ur.UserRepository) GameUseCase {
 	return &gameUseCase{
 		userRepository: ur,
 	}

@@ -3,9 +3,7 @@ package gacha
 import (
 	"encoding/json"
 	"fmt"
-	"math/rand"
 	"net/http"
-	"time"
 
 	"20dojo-online/pkg/constant"
 	"20dojo-online/pkg/dcontext"
@@ -30,11 +28,6 @@ func NewGachaHandler(gu usecase.GachaUseCase) GachaHandler {
 	return &gachaHandler{
 		gachaUseCase: gu,
 	}
-}
-
-// init() 乱数のseed定義
-func init() {
-	rand.Seed(time.Now().UnixNano())
 }
 
 // HandleGachaDraw ガチャ実行
