@@ -1,12 +1,11 @@
-// Package persistence 技術的関心事を扱う
-package persistence
+package user
 
 import (
 	"database/sql"
 	"log"
 
 	"20dojo-online/pkg/db"
-	"20dojo-online/pkg/server/domain/model"
+	model "20dojo-online/pkg/server/domain/model/user"
 	repository "20dojo-online/pkg/server/domain/repository/user"
 )
 

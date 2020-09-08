@@ -1,4 +1,4 @@
-package model
+package usercollectionitem
 
 // UserCollectionItem table:user_collection_itemのデータ
 type UserCollectionItem struct {

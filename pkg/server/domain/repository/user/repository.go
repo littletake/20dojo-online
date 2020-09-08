@@ -3,7 +3,7 @@ package user
 import (
 	"database/sql"
 
-	"20dojo-online/pkg/server/domain/model"
+	model "20dojo-online/pkg/server/domain/model/user"
 )
 
 // UserRepository User におけるRepository のインターフェース

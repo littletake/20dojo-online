@@ -1,4 +1,4 @@
-package persistence
+package usercollectionitem
 
 import (
 	"database/sql"
@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"20dojo-online/pkg/db"
-	"20dojo-online/pkg/server/domain/model"
-	repository "20dojo-online/pkg/server/domain/repository/user_collection_item"
+	model "20dojo-online/pkg/server/domain/model/usercollectionitem"
+	repository "20dojo-online/pkg/server/domain/repository/usercollectionitem"
 )
 
 type ucItemPersistence struct{}

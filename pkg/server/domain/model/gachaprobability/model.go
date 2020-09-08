@@ -1,4 +1,4 @@
-package model
+package gachaprobability
 
 // GachaProb GachaProbabilityのデータ
 type GachaProb struct {

@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"20dojo-online/pkg/dcontext"
-	"20dojo-online/pkg/server/domain/model"
 	"20dojo-online/pkg/server/interface/myerror"
 	"20dojo-online/pkg/server/interface/response"
 	usecase "20dojo-online/pkg/server/usecase/collection"
@@ -33,7 +32,7 @@ func (ch collectionHandler) HandleCollectionList() http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		// collectionListResponse レスポンス形式
 		type collectionListResponse struct {
-			Collections []*model.CollectionItemResult `json:"collections"`
+			Collections []*usecase.CollectionItemResult `json:"collections"`
 		}
 
 		// コンテキストからuserID取得

@@ -1,4 +1,4 @@
-package model
+package user
 
 // UserL ユーザ情報
 type UserL struct {

@@ -1,11 +1,11 @@
-package persistence
+package collectionitem
 
 import (
 	"database/sql"
 
 	"20dojo-online/pkg/db"
-	"20dojo-online/pkg/server/domain/model"
-	repository "20dojo-online/pkg/server/domain/repository/collection_item"
+	model "20dojo-online/pkg/server/domain/model/collectionitem"
+	repository "20dojo-online/pkg/server/domain/repository/collectionitem"
 )
 
 type cItemPersistence struct{}

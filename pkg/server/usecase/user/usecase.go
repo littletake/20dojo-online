@@ -3,7 +3,7 @@ package user
 import (
 	"fmt"
 
-	"20dojo-online/pkg/server/domain/model"
+	model "20dojo-online/pkg/server/domain/model/user"
 	ur "20dojo-online/pkg/server/domain/repository/user"
 
 	"20dojo-online/pkg/server/interface/myerror"

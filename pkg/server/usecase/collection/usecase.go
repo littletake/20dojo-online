@@ -3,17 +3,17 @@ package collection
 import (
 	"fmt"
 
-	"20dojo-online/pkg/server/domain/model"
-	cr "20dojo-online/pkg/server/domain/repository/collection_item"
+	model "20dojo-online/pkg/server/domain/model/collectionitem"
+	cr "20dojo-online/pkg/server/domain/repository/collectionitem"
 	ur "20dojo-online/pkg/server/domain/repository/user"
-	ucr "20dojo-online/pkg/server/domain/repository/user_collection_item"
+	ucr "20dojo-online/pkg/server/domain/repository/usercollectionitem"
 
 	"20dojo-online/pkg/server/interface/myerror"
 )
 
 // CollectionUseCase UseCaseのインターフェース
 type CollectionUseCase interface {
-	GetCollectionSlice(userID string) ([]*model.CollectionItemResult, *myerror.MyErr)
+	GetCollectionSlice(userID string) ([]*CollectionItemResult, *myerror.MyErr)
 }
 
 type collectionUseCase struct {
@@ -32,8 +32,8 @@ func NewCollectionUseCase(ur ur.UserRepository, cr cr.CItemRepository,
 	}
 }
 
-// collectionItem コレクションアイテム一覧
-type collectionItem struct {
+// CollectionItemResult レスポンス用の構造体
+type CollectionItemResult struct {
 	CollectionID string `json:"collectionID"`
 	ItemName     string `json:"name"`
 	Rarity       int32  `json:"rarity"`
@@ -47,7 +47,7 @@ var cItemSlice []*model.CollectionItem
 var hasGotcItemSlice bool
 
 // GetUsersByHighScore Userデータを条件抽出
-func (cu collectionUseCase) GetCollectionSlice(userID string) ([]*model.CollectionItemResult, *myerror.MyErr) {
+func (cu collectionUseCase) GetCollectionSlice(userID string) ([]*CollectionItemResult, *myerror.MyErr) {
 	// ユーザデータの取得処理と存在チェックを実装
 	user, err := cu.userRepository.SelectUserByUserID(userID)
 	if err != nil {
@@ -86,9 +86,9 @@ func (cu collectionUseCase) GetCollectionSlice(userID string) ([]*model.Collecti
 		hasGotcItemSlice = true
 	}
 	// 二つのtableを合わせてresponseを作成
-	cItemResult := make([]*model.CollectionItemResult, len(cItemSlice))
+	cItemResult := make([]*CollectionItemResult, len(cItemSlice))
 	for i, cItem := range cItemSlice {
-		result := model.CollectionItemResult{
+		result := CollectionItemResult{
 			CollectionID: cItem.ItemID,
 			ItemName:     cItem.ItemName,
 			Rarity:       cItem.Rarity,

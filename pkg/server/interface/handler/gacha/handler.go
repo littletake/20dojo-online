@@ -7,7 +7,6 @@ import (
 
 	"20dojo-online/pkg/constant"
 	"20dojo-online/pkg/dcontext"
-	"20dojo-online/pkg/server/domain/model"
 	"20dojo-online/pkg/server/interface/myerror"
 	"20dojo-online/pkg/server/interface/response"
 	usecase "20dojo-online/pkg/server/usecase/gacha"
@@ -40,7 +39,7 @@ func (gh gachaHandler) HandleGachaDraw() http.HandlerFunc {
 
 		// gachaDrawResponse レスポンス形式
 		type gachaDrawResponse struct {
-			Results []*model.GachaResult `json:"results"`
+			Results []*usecase.GachaResult `json:"results"`
 		}
 
 		// リクエストBodyから更新情報を取得

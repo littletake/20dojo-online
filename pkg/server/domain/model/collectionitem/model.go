@@ -1,4 +1,4 @@
-package model
+package collectionitem
 
 // CollectionItem table:collection_itemの内容
 type CollectionItem struct {

@@ -1,11 +1,11 @@
-package persistence
+package gachaprobability
 
 import (
 	"database/sql"
 
 	"20dojo-online/pkg/db"
-	"20dojo-online/pkg/server/domain/model"
-	repository "20dojo-online/pkg/server/domain/repository/gacha_probability"
+	model "20dojo-online/pkg/server/domain/model/gachaprobability"
+	repository "20dojo-online/pkg/server/domain/repository/gachaprobability"
 )
 
 type gachaProbPersistence struct{}

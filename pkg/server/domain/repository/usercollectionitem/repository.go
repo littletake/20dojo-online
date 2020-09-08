@@ -1,9 +1,9 @@
-package user_collection_item
+package usercollectionitem
 
 import (
 	"database/sql"
 
-	"20dojo-online/pkg/server/domain/model"
+	model "20dojo-online/pkg/server/domain/model/usercollectionitem"
 )
 
 // UCItemRepository UserCollectionItem におけるRepository のインターフェース
