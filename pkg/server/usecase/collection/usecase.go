@@ -1,0 +1,100 @@
+package collection
+
+import (
+	"fmt"
+
+	model "20dojo-online/pkg/server/domain/model/collectionitem"
+	cr "20dojo-online/pkg/server/domain/repository/collectionitem"
+	ur "20dojo-online/pkg/server/domain/repository/user"
+	ucr "20dojo-online/pkg/server/domain/repository/usercollectionitem"
+
+	"20dojo-online/pkg/server/interface/myerror"
+)
+
+// CollectionUseCase UseCaseのインターフェース
+type CollectionUseCase interface {
+	GetCollectionSlice(userID string) ([]*CollectionItemResult, *myerror.MyErr)
+}
+
+type collectionUseCase struct {
+	userRepository   ur.UserRepository
+	cItemRepository  cr.CItemRepository
+	ucItemRepository ucr.UCItemRepository
+}
+
+// NewCollectionUseCase UseCaseを生成
+func NewCollectionUseCase(ur ur.UserRepository, cr cr.CItemRepository,
+	ucr ucr.UCItemRepository) CollectionUseCase {
+	return &collectionUseCase{
+		userRepository:   ur,
+		cItemRepository:  cr,
+		ucItemRepository: ucr,
+	}
+}
+
+// CollectionItemResult レスポンス用の構造体
+type CollectionItemResult struct {
+	CollectionID string `json:"collectionID"`
+	ItemName     string `json:"name"`
+	Rarity       int32  `json:"rarity"`
+	HasItem      bool   `json:"hasItem"`
+}
+
+// cItemSlice collectionItemのスライス
+var cItemSlice []*model.CollectionItem
+
+// hasGotcItemSlice table:collection_itemの取得状況
+var hasGotcItemSlice bool
+
+// GetUsersByHighScore Userデータを条件抽出
+func (cu *collectionUseCase) GetCollectionSlice(userID string) ([]*CollectionItemResult, *myerror.MyErr) {
+	// ユーザデータの取得処理と存在チェックを実装
+	user, err := cu.userRepository.SelectUserByUserID(userID)
+	if err != nil {
+		myErr := myerror.NewMyErr(err, 500)
+		return nil, myErr
+	}
+	if user == nil {
+		myErr := myerror.NewMyErr(
+			fmt.Errorf("user not found"),
+			500,
+		)
+		return nil, myErr
+	}
+	// 現ユーザが保持しているアイテムの情報をまとめる -> hasGotItemMap
+	// table: user_collection_itemに対してuserIDのものを取得
+	ucItemSlice, err := cu.ucItemRepository.SelectUCItemSliceByUserID(userID)
+	if err != nil {
+		myErr := myerror.NewMyErr(err, 500)
+		return nil, myErr
+	}
+	// hasGotItemMap 既出アイテム一覧map
+	// [注意] ガチャ実行時も追加するので可変長指定
+	hasGotItemMap := make(map[string]bool)
+	for _, ucItem := range ucItemSlice {
+		itemID := ucItem.CollectionItemID
+		hasGotItemMap[itemID] = true
+	}
+	// 全アイテムの情報をまとめる -> cItemSlice
+	// hasGotItemSlice 一度だけ実行するように制御
+	if !hasGotcItemSlice {
+		cItemSlice, err = cu.cItemRepository.SelectAllCollectionItem()
+		if err != nil {
+			myErr := myerror.NewMyErr(err, 500)
+			return nil, myErr
+		}
+		hasGotcItemSlice = true
+	}
+	// 二つのtableを合わせてresponseを作成
+	cItemResult := make([]*CollectionItemResult, len(cItemSlice))
+	for i, cItem := range cItemSlice {
+		result := CollectionItemResult{
+			CollectionID: cItem.ItemID,
+			ItemName:     cItem.ItemName,
+			Rarity:       cItem.Rarity,
+			HasItem:      hasGotItemMap[cItem.ItemID],
+		}
+		cItemResult[i] = &result
+	}
+	return cItemResult, nil
+}
