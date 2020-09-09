@@ -3,20 +3,23 @@ package gachaprobability
 import (
 	"database/sql"
 
-	"20dojo-online/pkg/db"
 	model "20dojo-online/pkg/server/domain/model/gachaprobability"
 	repository "20dojo-online/pkg/server/domain/repository/gachaprobability"
 )
 
-type gachaProbPersistence struct{}
+type gachaProbPersistence struct {
+	db *sql.DB
+}
 
 // NewGachaProbPersistence Gachaprob データに関するPersistence を生成
-func NewGachaProbPersistence() repository.GachaProbRepository {
-	return &gachaProbPersistence{}
+func NewGachaProbPersistence(db *sql.DB) repository.GachaProbRepository {
+	return &gachaProbPersistence{
+		db: db,
+	}
 }
 
 func (gp gachaProbPersistence) SelectAllGachaProb() ([]*model.GachaProb, error) {
-	rows, err := db.Conn.Query("SELECT * FROM gacha_probability")
+	rows, err := gp.db.Query("SELECT * FROM gacha_probability")
 	if err != nil {
 		return nil, err
 	}

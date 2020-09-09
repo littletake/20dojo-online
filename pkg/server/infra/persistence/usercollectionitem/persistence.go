@@ -6,21 +6,24 @@ import (
 	"strconv"
 	"strings"
 
-	"20dojo-online/pkg/db"
 	model "20dojo-online/pkg/server/domain/model/usercollectionitem"
 	repository "20dojo-online/pkg/server/domain/repository/usercollectionitem"
 )
 
-type ucItemPersistence struct{}
+type ucItemPersistence struct {
+	db *sql.DB
+}
 
 // NewUCItemPersistence UserCollectionItem データに関するPersistence を生成
-func NewUCItemPersistence() repository.UCItemRepository {
-	return &ucItemPersistence{}
+func NewUCItemPersistence(db *sql.DB) repository.UCItemRepository {
+	return &ucItemPersistence{
+		db: db,
+	}
 }
 
 // SelectUCItemSliceByUserID userIDを条件にレコードを取得する
 func (up ucItemPersistence) SelectUCItemSliceByUserID(userID string) ([]*model.UserCollectionItem, error) {
-	rows, err := db.Conn.Query("SELECT * FROM user_collection_item WHERE user_id = ?", userID)
+	rows, err := up.db.Query("SELECT * FROM user_collection_item WHERE user_id = ?", userID)
 	if err != nil {
 		return nil, err
 	}

@@ -5,8 +5,10 @@ import (
 	"net/http"
 	"time"
 
+	"20dojo-online/pkg/server/infra/db"
 	cp "20dojo-online/pkg/server/infra/persistence/collectionitem"
 	gp "20dojo-online/pkg/server/infra/persistence/gachaprobability"
+	txp "20dojo-online/pkg/server/infra/persistence/transaction"
 	up "20dojo-online/pkg/server/infra/persistence/user"
 	ucp "20dojo-online/pkg/server/infra/persistence/usercollectionitem"
 	ch "20dojo-online/pkg/server/interface/handler/collection"
@@ -26,15 +28,22 @@ import (
 // Serve HTTPサーバを起動する
 func Serve(addr string) {
 	// レイヤードアーキテクチャ
-	userPersistence := up.NewUserPersistence()
-	cItemPersistence := cp.NewCItemPersistence()
-	ucItemPersistence := ucp.NewUCItemPersistence()
-	gachaProbPersistence := gp.NewGachaProbPersistence()
+	userPersistence := up.NewUserPersistence(db.Conn)
+	cItemPersistence := cp.NewCItemPersistence(db.Conn)
+	ucItemPersistence := ucp.NewUCItemPersistence(db.Conn)
+	gachaProbPersistence := gp.NewGachaProbPersistence(db.Conn)
+	txPersistence := txp.NewTxPersistence(db.Conn)
 
 	userUseCase := uu.NewUserUseCase(userPersistence)
 	gameUseCase := gu.NewGameUseCase(userPersistence)
 	rankingUseCase := ru.NewRankingUseCase(userPersistence)
-	gachaUseCase := gcu.NewGachaUseCase(userPersistence, cItemPersistence, ucItemPersistence, gachaProbPersistence, time.Now().UnixNano())
+	gachaUseCase := gcu.NewGachaUseCase(userPersistence,
+		cItemPersistence,
+		ucItemPersistence,
+		gachaProbPersistence,
+		time.Now().UnixNano(),
+		txPersistence,
+	)
 	collectionUseCase := cu.NewCollectionUseCase(userPersistence, cItemPersistence, ucItemPersistence)
 
 	settingHandler := sh.NewSettingHandler()

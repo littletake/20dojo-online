@@ -3,20 +3,23 @@ package collectionitem
 import (
 	"database/sql"
 
-	"20dojo-online/pkg/db"
 	model "20dojo-online/pkg/server/domain/model/collectionitem"
 	repository "20dojo-online/pkg/server/domain/repository/collectionitem"
 )
 
-type cItemPersistence struct{}
+type cItemPersistence struct {
+	db *sql.DB
+}
 
 // NewCItemPersistence User データに関するPersistence を生成
-func NewCItemPersistence() repository.CItemRepository {
-	return &cItemPersistence{}
+func NewCItemPersistence(db *sql.DB) repository.CItemRepository {
+	return &cItemPersistence{
+		db: db,
+	}
 }
 
 func (cp cItemPersistence) SelectAllCollectionItem() ([]*model.CollectionItem, error) {
-	rows, err := db.Conn.Query("SELECT * FROM collection_item")
+	rows, err := cp.db.Query("SELECT * FROM collection_item")
 	if err != nil {
 		return nil, err
 	}

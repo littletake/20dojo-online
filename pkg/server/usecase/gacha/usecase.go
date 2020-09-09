@@ -3,18 +3,16 @@ package gacha
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"math/rand"
 
 	"20dojo-online/pkg/constant"
-	"20dojo-online/pkg/db"
 	cm "20dojo-online/pkg/server/domain/model/collectionitem"
 	um "20dojo-online/pkg/server/domain/model/user"
 	ucm "20dojo-online/pkg/server/domain/model/usercollectionitem"
 	cr "20dojo-online/pkg/server/domain/repository/collectionitem"
 	gr "20dojo-online/pkg/server/domain/repository/gachaprobability"
 
-	// txr "20dojo-online/pkg/server/domain/repository/transaction"
+	txr "20dojo-online/pkg/server/domain/repository/transaction"
 	ur "20dojo-online/pkg/server/domain/repository/user"
 	ucr "20dojo-online/pkg/server/domain/repository/usercollectionitem"
 	"20dojo-online/pkg/server/interface/myerror"
@@ -35,18 +33,19 @@ type gachaUseCase struct {
 	ucItemRepository    ucr.UCItemRepository
 	gachaProbRepository gr.GachaProbRepository
 	seed                int64
-	// txRepository        txr.TxRepository
+	txRepository        txr.TxRepository
 }
 
 // NewGachaUseCase Userデータに関するUseCaseを生成
 func NewGachaUseCase(ur ur.UserRepository, cr cr.CItemRepository,
-	ucr ucr.UCItemRepository, gpr gr.GachaProbRepository, seed int64) GachaUseCase {
+	ucr ucr.UCItemRepository, gpr gr.GachaProbRepository, seed int64, txr txr.TxRepository) GachaUseCase {
 	return &gachaUseCase{
 		userRepository:      ur,
 		cItemRepository:     cr,
 		ucItemRepository:    ucr,
 		gachaProbRepository: gpr,
 		seed:                seed,
+		txRepository:        txr,
 	}
 }
 
@@ -131,46 +130,51 @@ func (gu *gachaUseCase) Gacha(gachaTimes int32, userID string) ([]*GachaResult, 
 	// 2. アイテムの照合
 	gachaResultSlice, newItemSlice := gu.CreateGachaResults(gettingItemSlice, hasGotItemMap, userID)
 
-	// // TODO: できていない（結局txが必要になってしまう）
 	// // 3. トランザクション開始（複数DB操作）
-	// if err = gu.txRepository.Transaction(gu.BulkInsertAndUpdate(newItemSlice, user, tx)); err != nil {
+	if err = gu.txRepository.Transaction(func(tx *sql.Tx) error {
+		err := gu.BulkInsertAndUpdate(newItemSlice, user, tx)
+		return err
+	}); err != nil {
+		myErr := myerror.NewMyErr(err, 500)
+		return nil, myErr
+	}
 	// 	myErr := myerror.NewMyErr(err, 500)
 	// 	return nil, myErr
 	// }
-	tx, err := db.Conn.Begin()
-	if err != nil {
-		myErr := myerror.NewMyErr(err, 500)
-		return nil, myErr
-	}
-	// TODO: 書き方再検討
-	defer func() {
-		if err := recover(); err != nil {
-			log.Println("!! PANIC !!")
-			log.Println(err)
-			if rollbackErr := tx.Rollback(); rollbackErr != nil {
-				log.Println("failed to Rollback")
-				log.Println(rollbackErr)
-				// myErr := CreateMyErr(rollbackErr, 500)
-				// return nil, myErr
-			}
-		}
-	}()
-	// 3-1. バルクインサート
-	if len(newItemSlice) != 0 {
-		if err := gu.ucItemRepository.BulkInsertUCItemSlice(newItemSlice, tx); err != nil {
-			myErr := myerror.NewMyErr(err, 500)
-			return nil, myErr
-		}
-	}
-	// 3-2. ユーザの保持コイン更新
-	if err := gu.userRepository.UpdateUserByUserInTx(user, tx); err != nil {
-		myErr := myerror.NewMyErr(err, 500)
-		return nil, myErr
-	}
-	if err := tx.Commit(); err != nil {
-		myErr := myerror.NewMyErr(err, 500)
-		return nil, myErr
-	}
+	// tx, err := db.Conn.Begin()
+	// if err != nil {
+	// 	myErr := myerror.NewMyErr(err, 500)
+	// 	return nil, myErr
+	// }
+	// // TODO: 書き方再検討
+	// defer func() {
+	// 	if err := recover(); err != nil {
+	// 		log.Println("!! PANIC !!")
+	// 		log.Println(err)
+	// 		if rollbackErr := tx.Rollback(); rollbackErr != nil {
+	// 			log.Println("failed to Rollback")
+	// 			log.Println(rollbackErr)
+	// 			// myErr := CreateMyErr(rollbackErr, 500)
+	// 			// return nil, myErr
+	// 		}
+	// 	}
+	// }()
+	// // 3-1. バルクインサート
+	// if len(newItemSlice) != 0 {
+	// 	if err := gu.ucItemRepository.BulkInsertUCItemSlice(newItemSlice, tx); err != nil {
+	// 		myErr := myerror.NewMyErr(err, 500)
+	// 		return nil, myErr
+	// 	}
+	// }
+	// // 3-2. ユーザの保持コイン更新
+	// if err := gu.userRepository.UpdateUserByUserInTx(user, tx); err != nil {
+	// 	myErr := myerror.NewMyErr(err, 500)
+	// 	return nil, myErr
+	// }
+	// if err := tx.Commit(); err != nil {
+	// 	myErr := myerror.NewMyErr(err, 500)
+	// 	return nil, myErr
+	// }
 	return gachaResultSlice, nil
 }
 
@@ -259,7 +263,7 @@ func (gu *gachaUseCase) CreateGachaResults(gettingItemSlice []string, hasGotItem
 // TODO: 未完成
 func (gu *gachaUseCase) BulkInsertAndUpdate(newItemSlice []*ucm.UserCollectionItem, user *um.UserL, tx *sql.Tx) error {
 	// 3-1. バルクインサート
-	if len(newItemSlice) != 0 {
+	if len(newItemSlice) > 0 {
 		if err := gu.ucItemRepository.BulkInsertUCItemSlice(newItemSlice, tx); err != nil {
 			return err
 		}

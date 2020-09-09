@@ -4,20 +4,23 @@ import (
 	"database/sql"
 	"log"
 
-	"20dojo-online/pkg/db"
 	repository "20dojo-online/pkg/server/domain/repository/transaction"
 )
 
-type txPersistence struct{}
+type txPersistence struct {
+	db *sql.DB
+}
 
 // NewTxPersistence Tx に関するPersistenceを生成
-func NewTxPersistence() repository.TxRepository {
-	return &txPersistence{}
+func NewTxPersistence(db *sql.DB) repository.TxRepository {
+	return &txPersistence{
+		db: db,
+	}
 }
 
 // Transaction トランザクション処理
-func (tp txPersistence) Transaction(function func(any interface{}, tx *sql.Tx) error) error {
-	tx, err := db.Conn.Begin()
+func (tp txPersistence) Transaction(function func(tx *sql.Tx) error) error {
+	tx, err := tp.db.Begin()
 	if err != nil {
 		return err
 	}
@@ -39,7 +42,7 @@ func (tp txPersistence) Transaction(function func(any interface{}, tx *sql.Tx) e
 
 	// 実行
 	// TODO: エラーの書き方を考える
-	if err = function(any, tx); err != nil {
+	if err = function(tx); err != nil {
 		log.Fatal(err)
 		if rollbackErr := tx.Rollback(); rollbackErr != nil {
 			log.Println("failed to Rollback")
