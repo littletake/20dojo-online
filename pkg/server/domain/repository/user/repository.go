@@ -8,8 +8,8 @@ import (
 	model "20dojo-online/pkg/server/domain/model/user"
 )
 
-// UserRepository User におけるRepository のインターフェース
-type UserRepository interface {
+// UserRepo User におけるRepository のインターフェース
+type UserRepo interface {
 	SelectUserByUserID(userID string) (*model.UserL, error)
 	SelectUserByAuthToken(userID string) (*model.UserL, error)
 	SelectUsersByHighScore(limit int32, start int32) ([]*model.UserL, error)

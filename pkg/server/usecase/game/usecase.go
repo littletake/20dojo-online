@@ -15,11 +15,11 @@ type GameUseCase interface {
 	UpdateCoinAndHighScore(userID string, score int32) (int32, *myerror.MyErr)
 }
 type gameUseCase struct {
-	userRepository ur.UserRepository
+	userRepository ur.UserRepo
 }
 
 // NewGameUseCase GameUsecaseの生成
-func NewGameUseCase(ur ur.UserRepository) GameUseCase {
+func NewGameUseCase(ur ur.UserRepo) GameUseCase {
 	return &gameUseCase{
 		userRepository: ur,
 	}

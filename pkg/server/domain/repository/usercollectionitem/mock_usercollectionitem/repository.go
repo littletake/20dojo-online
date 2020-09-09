@@ -11,54 +11,54 @@ import (
 	reflect "reflect"
 )
 
-// MockUCItemRepository is a mock of UCItemRepository interface
-type MockUCItemRepository struct {
+// MockUserCollectionItemRepo is a mock of UserCollectionItemRepo interface
+type MockUserCollectionItemRepo struct {
 	ctrl     *gomock.Controller
-	recorder *MockUCItemRepositoryMockRecorder
+	recorder *MockUserCollectionItemRepoMockRecorder
 }
 
-// MockUCItemRepositoryMockRecorder is the mock recorder for MockUCItemRepository
-type MockUCItemRepositoryMockRecorder struct {
-	mock *MockUCItemRepository
+// MockUserCollectionItemRepoMockRecorder is the mock recorder for MockUserCollectionItemRepo
+type MockUserCollectionItemRepoMockRecorder struct {
+	mock *MockUserCollectionItemRepo
 }
 
-// NewMockUCItemRepository creates a new mock instance
-func NewMockUCItemRepository(ctrl *gomock.Controller) *MockUCItemRepository {
-	mock := &MockUCItemRepository{ctrl: ctrl}
-	mock.recorder = &MockUCItemRepositoryMockRecorder{mock}
+// NewMockUserCollectionItemRepo creates a new mock instance
+func NewMockUserCollectionItemRepo(ctrl *gomock.Controller) *MockUserCollectionItemRepo {
+	mock := &MockUserCollectionItemRepo{ctrl: ctrl}
+	mock.recorder = &MockUserCollectionItemRepoMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockUCItemRepository) EXPECT() *MockUCItemRepositoryMockRecorder {
+func (m *MockUserCollectionItemRepo) EXPECT() *MockUserCollectionItemRepoMockRecorder {
 	return m.recorder
 }
 
-// SelectUCItemSliceByUserID mocks base method
-func (m *MockUCItemRepository) SelectUCItemSliceByUserID(userID string) ([]*usercollectionitem.UserCollectionItem, error) {
+// SelectSliceByUserID mocks base method
+func (m *MockUserCollectionItemRepo) SelectSliceByUserID(userID string) ([]*usercollectionitem.UserCollectionItem, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SelectUCItemSliceByUserID", userID)
+	ret := m.ctrl.Call(m, "SelectSliceByUserID", userID)
 	ret0, _ := ret[0].([]*usercollectionitem.UserCollectionItem)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// SelectUCItemSliceByUserID indicates an expected call of SelectUCItemSliceByUserID
-func (mr *MockUCItemRepositoryMockRecorder) SelectUCItemSliceByUserID(userID interface{}) *gomock.Call {
+// SelectSliceByUserID indicates an expected call of SelectSliceByUserID
+func (mr *MockUserCollectionItemRepoMockRecorder) SelectSliceByUserID(userID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SelectUCItemSliceByUserID", reflect.TypeOf((*MockUCItemRepository)(nil).SelectUCItemSliceByUserID), userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SelectSliceByUserID", reflect.TypeOf((*MockUserCollectionItemRepo)(nil).SelectSliceByUserID), userID)
 }
 
-// BulkInsertUCItemSlice mocks base method
-func (m *MockUCItemRepository) BulkInsertUCItemSlice(arg0 []*usercollectionitem.UserCollectionItem, arg1 *sql.Tx) error {
+// BulkInsert mocks base method
+func (m *MockUserCollectionItemRepo) BulkInsert(arg0 []*usercollectionitem.UserCollectionItem, arg1 *sql.Tx) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "BulkInsertUCItemSlice", arg0, arg1)
+	ret := m.ctrl.Call(m, "BulkInsert", arg0, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// BulkInsertUCItemSlice indicates an expected call of BulkInsertUCItemSlice
-func (mr *MockUCItemRepositoryMockRecorder) BulkInsertUCItemSlice(arg0, arg1 interface{}) *gomock.Call {
+// BulkInsert indicates an expected call of BulkInsert
+func (mr *MockUserCollectionItemRepoMockRecorder) BulkInsert(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BulkInsertUCItemSlice", reflect.TypeOf((*MockUCItemRepository)(nil).BulkInsertUCItemSlice), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BulkInsert", reflect.TypeOf((*MockUserCollectionItemRepo)(nil).BulkInsert), arg0, arg1)
 }

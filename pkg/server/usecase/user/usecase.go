@@ -20,11 +20,11 @@ type UserUseCase interface {
 }
 
 type userUseCase struct {
-	userRepository ur.UserRepository
+	userRepository ur.UserRepo
 }
 
 // NewUserUseCase Userデータに関するUseCaseを生成
-func NewUserUseCase(ur ur.UserRepository) UserUseCase {
+func NewUserUseCase(ur ur.UserRepo) UserUseCase {
 	return &userUseCase{
 		userRepository: ur,
 	}

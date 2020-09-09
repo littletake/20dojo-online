@@ -36,7 +36,7 @@ func TestUseCase_UpdateCoinAndHighScore(t *testing.T) {
 	// モックの設定
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	userMockModel := mock_user.NewMockUserRepository(ctrl)
+	userMockModel := mock_user.NewMockUserRepo(ctrl)
 	userMockModel.EXPECT().SelectUserByUserID(requestID).Return(exampleUser, nil)
 	userMockModel.EXPECT().UpdateUserByUser(returnUser).Return(nil)
 

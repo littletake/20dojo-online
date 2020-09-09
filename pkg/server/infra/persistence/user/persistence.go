@@ -12,11 +12,9 @@ type userPersistence struct {
 	db *sql.DB
 }
 
-// NewUserPersistence User データに関するPersistence を生成
-func NewUserPersistence(db *sql.DB) repository.UserRepository {
-	return &userPersistence{
-		db: db,
-	}
+// NewPersistence User データに関するPersistence を生成
+func NewPersistence() repository.UserRepo {
+	return &userPersistence{}
 }
 
 func (up userPersistence) SelectUserByUserID(id string) (*model.UserL, error) {

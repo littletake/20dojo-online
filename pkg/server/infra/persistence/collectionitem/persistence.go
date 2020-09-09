@@ -11,11 +11,9 @@ type cItemPersistence struct {
 	db *sql.DB
 }
 
-// NewCItemPersistence User データに関するPersistence を生成
-func NewCItemPersistence(db *sql.DB) repository.CItemRepository {
-	return &cItemPersistence{
-		db: db,
-	}
+// NewPersistence CollectionItem データに関するPersistence を生成
+func NewPersistence() repository.CollectionItemRepo {
+	return &cItemPersistence{}
 }
 
 func (cp cItemPersistence) SelectAllCollectionItem() ([]*model.CollectionItem, error) {

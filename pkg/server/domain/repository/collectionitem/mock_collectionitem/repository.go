@@ -10,31 +10,31 @@ import (
 	reflect "reflect"
 )
 
-// MockCItemRepository is a mock of CItemRepository interface
-type MockCItemRepository struct {
+// MockCollectionItemRepo is a mock of CollectionItemRepo interface
+type MockCollectionItemRepo struct {
 	ctrl     *gomock.Controller
-	recorder *MockCItemRepositoryMockRecorder
+	recorder *MockCollectionItemRepoMockRecorder
 }
 
-// MockCItemRepositoryMockRecorder is the mock recorder for MockCItemRepository
-type MockCItemRepositoryMockRecorder struct {
-	mock *MockCItemRepository
+// MockCollectionItemRepoMockRecorder is the mock recorder for MockCollectionItemRepo
+type MockCollectionItemRepoMockRecorder struct {
+	mock *MockCollectionItemRepo
 }
 
-// NewMockCItemRepository creates a new mock instance
-func NewMockCItemRepository(ctrl *gomock.Controller) *MockCItemRepository {
-	mock := &MockCItemRepository{ctrl: ctrl}
-	mock.recorder = &MockCItemRepositoryMockRecorder{mock}
+// NewMockCollectionItemRepo creates a new mock instance
+func NewMockCollectionItemRepo(ctrl *gomock.Controller) *MockCollectionItemRepo {
+	mock := &MockCollectionItemRepo{ctrl: ctrl}
+	mock.recorder = &MockCollectionItemRepoMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockCItemRepository) EXPECT() *MockCItemRepositoryMockRecorder {
+func (m *MockCollectionItemRepo) EXPECT() *MockCollectionItemRepoMockRecorder {
 	return m.recorder
 }
 
 // SelectAllCollectionItem mocks base method
-func (m *MockCItemRepository) SelectAllCollectionItem() ([]*collectionitem.CollectionItem, error) {
+func (m *MockCollectionItemRepo) SelectAllCollectionItem() ([]*collectionitem.CollectionItem, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SelectAllCollectionItem")
 	ret0, _ := ret[0].([]*collectionitem.CollectionItem)
@@ -43,7 +43,7 @@ func (m *MockCItemRepository) SelectAllCollectionItem() ([]*collectionitem.Colle
 }
 
 // SelectAllCollectionItem indicates an expected call of SelectAllCollectionItem
-func (mr *MockCItemRepositoryMockRecorder) SelectAllCollectionItem() *gomock.Call {
+func (mr *MockCollectionItemRepoMockRecorder) SelectAllCollectionItem() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SelectAllCollectionItem", reflect.TypeOf((*MockCItemRepository)(nil).SelectAllCollectionItem))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SelectAllCollectionItem", reflect.TypeOf((*MockCollectionItemRepo)(nil).SelectAllCollectionItem))
 }

@@ -10,31 +10,31 @@ import (
 	reflect "reflect"
 )
 
-// MockTxRepository is a mock of TxRepository interface
-type MockTxRepository struct {
+// MockTxRepo is a mock of TxRepo interface
+type MockTxRepo struct {
 	ctrl     *gomock.Controller
-	recorder *MockTxRepositoryMockRecorder
+	recorder *MockTxRepoMockRecorder
 }
 
-// MockTxRepositoryMockRecorder is the mock recorder for MockTxRepository
-type MockTxRepositoryMockRecorder struct {
-	mock *MockTxRepository
+// MockTxRepoMockRecorder is the mock recorder for MockTxRepo
+type MockTxRepoMockRecorder struct {
+	mock *MockTxRepo
 }
 
-// NewMockTxRepository creates a new mock instance
-func NewMockTxRepository(ctrl *gomock.Controller) *MockTxRepository {
-	mock := &MockTxRepository{ctrl: ctrl}
-	mock.recorder = &MockTxRepositoryMockRecorder{mock}
+// NewMockTxRepo creates a new mock instance
+func NewMockTxRepo(ctrl *gomock.Controller) *MockTxRepo {
+	mock := &MockTxRepo{ctrl: ctrl}
+	mock.recorder = &MockTxRepoMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockTxRepository) EXPECT() *MockTxRepositoryMockRecorder {
+func (m *MockTxRepo) EXPECT() *MockTxRepoMockRecorder {
 	return m.recorder
 }
 
 // Transaction mocks base method
-func (m *MockTxRepository) Transaction(f func(*sql.Tx) error) error {
+func (m *MockTxRepo) Transaction(f func(*sql.Tx) error) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Transaction", f)
 	ret0, _ := ret[0].(error)
@@ -42,7 +42,7 @@ func (m *MockTxRepository) Transaction(f func(*sql.Tx) error) error {
 }
 
 // Transaction indicates an expected call of Transaction
-func (mr *MockTxRepositoryMockRecorder) Transaction(f interface{}) *gomock.Call {
+func (mr *MockTxRepoMockRecorder) Transaction(f interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Transaction", reflect.TypeOf((*MockTxRepository)(nil).Transaction), f)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Transaction", reflect.TypeOf((*MockTxRepo)(nil).Transaction), f)
 }

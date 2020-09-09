@@ -27,7 +27,7 @@ func TestUseCase_GetUserByUserID(t *testing.T) {
 	// モックの設定
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	mockUserRepository := mock_user.NewMockUserRepository(ctrl)
+	mockUserRepository := mock_user.NewMockUserRepo(ctrl)
 	mockUserRepository.EXPECT().SelectUserByUserID(request).Return(expected, nil)
 
 	usecase := NewUserUseCase(mockUserRepository)
@@ -45,7 +45,7 @@ func TestUseCase_GetUserByAuthToken(t *testing.T) {
 	// モックの設定
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	mockUserRepository := mock_user.NewMockUserRepository(ctrl)
+	mockUserRepository := mock_user.NewMockUserRepo(ctrl)
 	mockUserRepository.EXPECT().SelectUserByAuthToken(request).Return(expected, nil)
 
 	usecase := NewUserUseCase(mockUserRepository)
@@ -65,7 +65,7 @@ func TestUseCase_RegisterUserFromUserName(t *testing.T) {
 	// モックの設定
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	mockUserRepository := mock_user.NewMockUserRepository(ctrl)
+	mockUserRepository := mock_user.NewMockUserRepo(ctrl)
 	mockUserRepository.EXPECT().InsertUser(exampleUser).Return(nil)
 
 	usecase := NewUserUseCase(mockUserRepository)
@@ -90,7 +90,7 @@ func TestUseCase_UpdateUserName(t *testing.T) {
 	// モックの設定
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	mockUserRepository := mock_user.NewMockUserRepository(ctrl)
+	mockUserRepository := mock_user.NewMockUserRepo(ctrl)
 	mockUserRepository.EXPECT().SelectUserByUserID(requestID).Return(exampleUser, nil)
 	mockUserRepository.EXPECT().UpdateUserByUser(expected).Return(nil)
 

@@ -145,11 +145,11 @@ func TestUseCase_CreateCItemSlice(t *testing.T) {
 	// モックの設定
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	mockUserRepository := mock_user.NewMockUserRepository(ctrl)
-	mockCItemRepository := mock_collectionitem.NewMockCItemRepository(ctrl)
-	mockUCItemRepository := mock_usercollectionitem.NewMockUCItemRepository(ctrl)
-	mockGachaProbRepository := mock_gachaprobability.NewMockGachaProbRepository(ctrl)
-	mockTxRepo := mock_transaction.NewMockTxRepository(ctrl)
+	mockUserRepository := mock_user.NewMockUserRepo(ctrl)
+	mockCItemRepository := mock_collectionitem.NewMockCollectionItemRepo(ctrl)
+	mockUCItemRepository := mock_usercollectionitem.NewMockUserCollectionItemRepo(ctrl)
+	mockGachaProbRepository := mock_gachaprobability.NewMockGachaProbRepo(ctrl)
+	mockTxRepo := mock_transaction.NewMockTxRepo(ctrl)
 	// DBからのレスポンスを固定
 	mockCItemRepository.EXPECT().SelectAllCollectionItem().Return(returnCItemSlice, nil)
 
@@ -172,11 +172,11 @@ func TestUseCase_CreateItemRatioSlice(t *testing.T) {
 	// モックの設定
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	mockUserRepository := mock_user.NewMockUserRepository(ctrl)
-	mockCItemRepository := mock_collectionitem.NewMockCItemRepository(ctrl)
-	mockUCItemRepository := mock_usercollectionitem.NewMockUCItemRepository(ctrl)
-	mockGachaProbRepository := mock_gachaprobability.NewMockGachaProbRepository(ctrl)
-	mockTxRepo := mock_transaction.NewMockTxRepository(ctrl)
+	mockUserRepository := mock_user.NewMockUserRepo(ctrl)
+	mockCItemRepository := mock_collectionitem.NewMockCollectionItemRepo(ctrl)
+	mockUCItemRepository := mock_usercollectionitem.NewMockUserCollectionItemRepo(ctrl)
+	mockGachaProbRepository := mock_gachaprobability.NewMockGachaProbRepo(ctrl)
+	mockTxRepo := mock_transaction.NewMockTxRepo(ctrl)
 
 	// DBからのレスポンスを固定
 	mockGachaProbRepository.EXPECT().SelectAllGachaProb().Return(returnGachaProbSlice, nil)
@@ -196,11 +196,11 @@ func TestUseCase_GetItems(t *testing.T) {
 	// モックの設定
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	mockUserRepository := mock_user.NewMockUserRepository(ctrl)
-	mockCItemRepository := mock_collectionitem.NewMockCItemRepository(ctrl)
-	mockUCItemRepository := mock_usercollectionitem.NewMockUCItemRepository(ctrl)
-	mockGachaProbRepository := mock_gachaprobability.NewMockGachaProbRepository(ctrl)
-	mockTxRepo := mock_transaction.NewMockTxRepository(ctrl)
+	mockUserRepository := mock_user.NewMockUserRepo(ctrl)
+	mockCItemRepository := mock_collectionitem.NewMockCollectionItemRepo(ctrl)
+	mockUCItemRepository := mock_usercollectionitem.NewMockUserCollectionItemRepo(ctrl)
+	mockGachaProbRepository := mock_gachaprobability.NewMockGachaProbRepo(ctrl)
+	mockTxRepo := mock_transaction.NewMockTxRepo(ctrl)
 
 	usecase := NewGachaUseCase(
 		mockUserRepository,
@@ -289,10 +289,10 @@ func TestUseCase_GetItems(t *testing.T) {
 // 	// モックの設定
 // 	ctrl := gomock.NewController(t)
 // 	defer ctrl.Finish()
-// 	mockUserRepository := mock_user.NewMockUserRepository(ctrl)
-// 	mockCItemRepository := mock_collectionitem.NewMockCItemRepository(ctrl)
-// 	mockUCItemRepository := mock_usercollectionitem.NewMockUCItemRepository(ctrl)
-// 	mockGachaProbRepository := mock_gachaprobability.NewMockGachaProbRepository(ctrl)
+// 	mockUserRepository := mock_user.NewMockUserRepo(ctrl)
+// 	mockCItemRepository := mock_collectionitem.NewMockCollectionItemRepo(ctrl)
+// 	mockUCItemRepository := mock_usercollectionitem.NewMockUserCollectionItemRepo(ctrl)
+// 	mockGachaProbRepository := mock_gachaprobability.NewMockGachaProbRepo(ctrl)
 // 	// DBからのレスポンスを固定
 // 	mockUserRepository.EXPECT().SelectUserByUserID(requestID).Return(exampleUser, nil)
 // 	mockUCItemRepository.EXPECT().SelectUCItemSliceByUserID(exampleUser.ID).Return(returnUCItemSlice, nil)

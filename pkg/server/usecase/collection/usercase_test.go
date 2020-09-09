@@ -90,12 +90,12 @@ func TestUseCase_GetCollectionSlice(t *testing.T) {
 	// モックの設定
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	mockUserRepository := mock_user.NewMockUserRepository(ctrl)
-	mockCItemRepository := mock_collectionitem.NewMockCItemRepository(ctrl)
-	mockUCItemRepository := mock_usercollectionitem.NewMockUCItemRepository(ctrl)
+	mockUserRepository := mock_user.NewMockUserRepo(ctrl)
+	mockCItemRepository := mock_collectionitem.NewMockCollectionItemRepo(ctrl)
+	mockUCItemRepository := mock_usercollectionitem.NewMockUserCollectionItemRepo(ctrl)
 	// DBからのレスポンスを固定
 	mockUserRepository.EXPECT().SelectUserByUserID(request).Return(exampleUser, nil)
-	mockUCItemRepository.EXPECT().SelectUCItemSliceByUserID(exampleUser.ID).Return(returnUCItemSlice, nil)
+	mockUCItemRepository.EXPECT().SelectSliceByUserID(exampleUser.ID).Return(returnUCItemSlice, nil)
 	mockCItemRepository.EXPECT().SelectAllCollectionItem().Return(returnCItemSlice, nil)
 
 	usecase := NewCollectionUseCase(mockUserRepository, mockCItemRepository, mockUCItemRepository)

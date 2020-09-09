@@ -10,31 +10,31 @@ import (
 	reflect "reflect"
 )
 
-// MockGachaProbRepository is a mock of GachaProbRepository interface
-type MockGachaProbRepository struct {
+// MockGachaProbRepo is a mock of GachaProbRepo interface
+type MockGachaProbRepo struct {
 	ctrl     *gomock.Controller
-	recorder *MockGachaProbRepositoryMockRecorder
+	recorder *MockGachaProbRepoMockRecorder
 }
 
-// MockGachaProbRepositoryMockRecorder is the mock recorder for MockGachaProbRepository
-type MockGachaProbRepositoryMockRecorder struct {
-	mock *MockGachaProbRepository
+// MockGachaProbRepoMockRecorder is the mock recorder for MockGachaProbRepo
+type MockGachaProbRepoMockRecorder struct {
+	mock *MockGachaProbRepo
 }
 
-// NewMockGachaProbRepository creates a new mock instance
-func NewMockGachaProbRepository(ctrl *gomock.Controller) *MockGachaProbRepository {
-	mock := &MockGachaProbRepository{ctrl: ctrl}
-	mock.recorder = &MockGachaProbRepositoryMockRecorder{mock}
+// NewMockGachaProbRepo creates a new mock instance
+func NewMockGachaProbRepo(ctrl *gomock.Controller) *MockGachaProbRepo {
+	mock := &MockGachaProbRepo{ctrl: ctrl}
+	mock.recorder = &MockGachaProbRepoMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockGachaProbRepository) EXPECT() *MockGachaProbRepositoryMockRecorder {
+func (m *MockGachaProbRepo) EXPECT() *MockGachaProbRepoMockRecorder {
 	return m.recorder
 }
 
 // SelectAllGachaProb mocks base method
-func (m *MockGachaProbRepository) SelectAllGachaProb() ([]*gachaprobability.GachaProb, error) {
+func (m *MockGachaProbRepo) SelectAllGachaProb() ([]*gachaprobability.GachaProb, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SelectAllGachaProb")
 	ret0, _ := ret[0].([]*gachaprobability.GachaProb)
@@ -43,7 +43,7 @@ func (m *MockGachaProbRepository) SelectAllGachaProb() ([]*gachaprobability.Gach
 }
 
 // SelectAllGachaProb indicates an expected call of SelectAllGachaProb
-func (mr *MockGachaProbRepositoryMockRecorder) SelectAllGachaProb() *gomock.Call {
+func (mr *MockGachaProbRepoMockRecorder) SelectAllGachaProb() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SelectAllGachaProb", reflect.TypeOf((*MockGachaProbRepository)(nil).SelectAllGachaProb))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SelectAllGachaProb", reflect.TypeOf((*MockGachaProbRepo)(nil).SelectAllGachaProb))
 }

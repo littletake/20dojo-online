@@ -11,31 +11,31 @@ import (
 	reflect "reflect"
 )
 
-// MockUserRepository is a mock of UserRepository interface
-type MockUserRepository struct {
+// MockUserRepo is a mock of UserRepo interface
+type MockUserRepo struct {
 	ctrl     *gomock.Controller
-	recorder *MockUserRepositoryMockRecorder
+	recorder *MockUserRepoMockRecorder
 }
 
-// MockUserRepositoryMockRecorder is the mock recorder for MockUserRepository
-type MockUserRepositoryMockRecorder struct {
-	mock *MockUserRepository
+// MockUserRepoMockRecorder is the mock recorder for MockUserRepo
+type MockUserRepoMockRecorder struct {
+	mock *MockUserRepo
 }
 
-// NewMockUserRepository creates a new mock instance
-func NewMockUserRepository(ctrl *gomock.Controller) *MockUserRepository {
-	mock := &MockUserRepository{ctrl: ctrl}
-	mock.recorder = &MockUserRepositoryMockRecorder{mock}
+// NewMockUserRepo creates a new mock instance
+func NewMockUserRepo(ctrl *gomock.Controller) *MockUserRepo {
+	mock := &MockUserRepo{ctrl: ctrl}
+	mock.recorder = &MockUserRepoMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockUserRepository) EXPECT() *MockUserRepositoryMockRecorder {
+func (m *MockUserRepo) EXPECT() *MockUserRepoMockRecorder {
 	return m.recorder
 }
 
 // SelectUserByUserID mocks base method
-func (m *MockUserRepository) SelectUserByUserID(userID string) (*user.UserL, error) {
+func (m *MockUserRepo) SelectUserByUserID(userID string) (*user.UserL, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SelectUserByUserID", userID)
 	ret0, _ := ret[0].(*user.UserL)
@@ -44,13 +44,13 @@ func (m *MockUserRepository) SelectUserByUserID(userID string) (*user.UserL, err
 }
 
 // SelectUserByUserID indicates an expected call of SelectUserByUserID
-func (mr *MockUserRepositoryMockRecorder) SelectUserByUserID(userID interface{}) *gomock.Call {
+func (mr *MockUserRepoMockRecorder) SelectUserByUserID(userID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SelectUserByUserID", reflect.TypeOf((*MockUserRepository)(nil).SelectUserByUserID), userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SelectUserByUserID", reflect.TypeOf((*MockUserRepo)(nil).SelectUserByUserID), userID)
 }
 
 // SelectUserByAuthToken mocks base method
-func (m *MockUserRepository) SelectUserByAuthToken(userID string) (*user.UserL, error) {
+func (m *MockUserRepo) SelectUserByAuthToken(userID string) (*user.UserL, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SelectUserByAuthToken", userID)
 	ret0, _ := ret[0].(*user.UserL)
@@ -59,13 +59,13 @@ func (m *MockUserRepository) SelectUserByAuthToken(userID string) (*user.UserL, 
 }
 
 // SelectUserByAuthToken indicates an expected call of SelectUserByAuthToken
-func (mr *MockUserRepositoryMockRecorder) SelectUserByAuthToken(userID interface{}) *gomock.Call {
+func (mr *MockUserRepoMockRecorder) SelectUserByAuthToken(userID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SelectUserByAuthToken", reflect.TypeOf((*MockUserRepository)(nil).SelectUserByAuthToken), userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SelectUserByAuthToken", reflect.TypeOf((*MockUserRepo)(nil).SelectUserByAuthToken), userID)
 }
 
 // SelectUsersByHighScore mocks base method
-func (m *MockUserRepository) SelectUsersByHighScore(limit, start int32) ([]*user.UserL, error) {
+func (m *MockUserRepo) SelectUsersByHighScore(limit, start int32) ([]*user.UserL, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SelectUsersByHighScore", limit, start)
 	ret0, _ := ret[0].([]*user.UserL)
@@ -74,13 +74,13 @@ func (m *MockUserRepository) SelectUsersByHighScore(limit, start int32) ([]*user
 }
 
 // SelectUsersByHighScore indicates an expected call of SelectUsersByHighScore
-func (mr *MockUserRepositoryMockRecorder) SelectUsersByHighScore(limit, start interface{}) *gomock.Call {
+func (mr *MockUserRepoMockRecorder) SelectUsersByHighScore(limit, start interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SelectUsersByHighScore", reflect.TypeOf((*MockUserRepository)(nil).SelectUsersByHighScore), limit, start)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SelectUsersByHighScore", reflect.TypeOf((*MockUserRepo)(nil).SelectUsersByHighScore), limit, start)
 }
 
 // InsertUser mocks base method
-func (m *MockUserRepository) InsertUser(user *user.UserL) error {
+func (m *MockUserRepo) InsertUser(user *user.UserL) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "InsertUser", user)
 	ret0, _ := ret[0].(error)
@@ -88,13 +88,13 @@ func (m *MockUserRepository) InsertUser(user *user.UserL) error {
 }
 
 // InsertUser indicates an expected call of InsertUser
-func (mr *MockUserRepositoryMockRecorder) InsertUser(user interface{}) *gomock.Call {
+func (mr *MockUserRepoMockRecorder) InsertUser(user interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertUser", reflect.TypeOf((*MockUserRepository)(nil).InsertUser), user)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertUser", reflect.TypeOf((*MockUserRepo)(nil).InsertUser), user)
 }
 
 // UpdateUserByUser mocks base method
-func (m *MockUserRepository) UpdateUserByUser(user *user.UserL) error {
+func (m *MockUserRepo) UpdateUserByUser(user *user.UserL) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateUserByUser", user)
 	ret0, _ := ret[0].(error)
@@ -102,13 +102,13 @@ func (m *MockUserRepository) UpdateUserByUser(user *user.UserL) error {
 }
 
 // UpdateUserByUser indicates an expected call of UpdateUserByUser
-func (mr *MockUserRepositoryMockRecorder) UpdateUserByUser(user interface{}) *gomock.Call {
+func (mr *MockUserRepoMockRecorder) UpdateUserByUser(user interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUserByUser", reflect.TypeOf((*MockUserRepository)(nil).UpdateUserByUser), user)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUserByUser", reflect.TypeOf((*MockUserRepo)(nil).UpdateUserByUser), user)
 }
 
 // UpdateUserByUserInTx mocks base method
-func (m *MockUserRepository) UpdateUserByUserInTx(user *user.UserL, tx *sql.Tx) error {
+func (m *MockUserRepo) UpdateUserByUserInTx(user *user.UserL, tx *sql.Tx) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateUserByUserInTx", user, tx)
 	ret0, _ := ret[0].(error)
@@ -116,7 +116,7 @@ func (m *MockUserRepository) UpdateUserByUserInTx(user *user.UserL, tx *sql.Tx) 
 }
 
 // UpdateUserByUserInTx indicates an expected call of UpdateUserByUserInTx
-func (mr *MockUserRepositoryMockRecorder) UpdateUserByUserInTx(user, tx interface{}) *gomock.Call {
+func (mr *MockUserRepoMockRecorder) UpdateUserByUserInTx(user, tx interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUserByUserInTx", reflect.TypeOf((*MockUserRepository)(nil).UpdateUserByUserInTx), user, tx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUserByUserInTx", reflect.TypeOf((*MockUserRepo)(nil).UpdateUserByUserInTx), user, tx)
 }

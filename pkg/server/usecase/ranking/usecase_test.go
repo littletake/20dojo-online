@@ -30,7 +30,7 @@ func TestUseCase_GetUsersByHighScore(t *testing.T) {
 	// モックの設定
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	userMockModel := mock_user.NewMockUserRepository(ctrl)
+	userMockModel := mock_user.NewMockUserRepo(ctrl)
 	userMockModel.EXPECT().SelectUsersByHighScore(constant.RankingListNumber, request).Return(expected, nil)
 
 	// usecase

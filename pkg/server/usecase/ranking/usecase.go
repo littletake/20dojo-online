@@ -18,11 +18,11 @@ type RankingUseCase interface {
 }
 
 type rankingUseCase struct {
-	userRepository ur.UserRepository
+	userRepository ur.UserRepo
 }
 
 // NewRankingUseCase Userデータに関するUseCaseを生成
-func NewRankingUseCase(ur ur.UserRepository) RankingUseCase {
+func NewRankingUseCase(ur ur.UserRepo) RankingUseCase {
 	return &rankingUseCase{
 		userRepository: ur,
 	}

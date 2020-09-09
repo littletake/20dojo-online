@@ -8,30 +8,29 @@ import (
 
 	model "20dojo-online/pkg/server/domain/model/usercollectionitem"
 	repository "20dojo-online/pkg/server/domain/repository/usercollectionitem"
+	"20dojo-online/pkg/server/infra/db"
 )
 
 type ucItemPersistence struct {
 	db *sql.DB
 }
 
-// NewUCItemPersistence UserCollectionItem データに関するPersistence を生成
-func NewUCItemPersistence(db *sql.DB) repository.UCItemRepository {
-	return &ucItemPersistence{
-		db: db,
-	}
+// NewPersistence UserCollectionItem データに関するPersistence を生成
+func NewPersistence() repository.UserCollectionItemRepo {
+	return &ucItemPersistence{}
 }
 
-// SelectUCItemSliceByUserID userIDを条件にレコードを取得する
-func (up ucItemPersistence) SelectUCItemSliceByUserID(userID string) ([]*model.UserCollectionItem, error) {
-	rows, err := up.db.Query("SELECT * FROM user_collection_item WHERE user_id = ?", userID)
+// SelectSliceByUserID userIDを条件にレコードを取得する
+func (up ucItemPersistence) SelectSliceByUserID(userID string) ([]*model.UserCollectionItem, error) {
+	rows, err := db.Conn.Query("SELECT * FROM user_collection_item WHERE user_id = ?", userID)
 	if err != nil {
 		return nil, err
 	}
 	return convertToUCItemSlice(rows)
 }
 
-// BulkInsertUserCollectionItem データベースに複数レコードを登録する
-func (up ucItemPersistence) BulkInsertUCItemSlice(records []*model.UserCollectionItem, tx *sql.Tx) error {
+// BulkInsert データベースに複数レコードを登録する
+func (up ucItemPersistence) BulkInsert(records []*model.UserCollectionItem, tx *sql.Tx) error {
 	var queryString strings.Builder
 	queryString.WriteString("INSERT INTO user_collection_item (user_id, collection_item_id) VALUES ")
 	for i, record := range records {
