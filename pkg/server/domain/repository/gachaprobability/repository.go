@@ -2,7 +2,7 @@ package gachaprobability
 
 import model "20dojo-online/pkg/server/domain/model/gachaprobability"
 
-// GachaProbRepository GachaProb におけるRepository のインターフェース
-type GachaProbRepository interface {
+// GachaProbRepo GachaProb におけるRepository のインターフェース
+type GachaProbRepo interface {
 	SelectAllGachaProb() ([]*model.GachaProb, error)
 }

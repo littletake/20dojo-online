@@ -30,17 +30,17 @@ type GachaUseCase interface {
 }
 
 type gachaUseCase struct {
-	userRepository      ur.UserRepository
-	cItemRepository     cr.CItemRepository
-	ucItemRepository    ucr.UCItemRepository
-	gachaProbRepository gr.GachaProbRepository
+	userRepository      ur.UserRepo
+	cItemRepository     cr.CollectionItemRepo
+	ucItemRepository    ucr.UserCollectionItemRepo
+	gachaProbRepository gr.GachaProbRepo
 	seed                int64
-	// txRepository        txr.TxRepository
+	// txRepository        txr.TxRepo
 }
 
 // NewGachaUseCase Userデータに関するUseCaseを生成
-func NewGachaUseCase(ur ur.UserRepository, cr cr.CItemRepository,
-	ucr ucr.UCItemRepository, gpr gr.GachaProbRepository, seed int64) GachaUseCase {
+func NewGachaUseCase(ur ur.UserRepo, cr cr.CollectionItemRepo,
+	ucr ucr.UserCollectionItemRepo, gpr gr.GachaProbRepo, seed int64) GachaUseCase {
 	return &gachaUseCase{
 		userRepository:      ur,
 		cItemRepository:     cr,
@@ -100,7 +100,7 @@ func (gu *gachaUseCase) Gacha(gachaTimes int32, userID string) ([]*GachaResult, 
 
 	// 現ユーザが保持しているアイテムの情報をまとめる -> hasGotItemMap
 	// table: user_collection_itemに対してuserIDのものを取得
-	ucItemSlice, err := gu.ucItemRepository.SelectUCItemSliceByUserID(userID)
+	ucItemSlice, err := gu.ucItemRepository.SelectSliceByUserID(userID)
 	if err != nil {
 		myErr := myerror.NewMyErr(err, 500)
 		return nil, myErr
@@ -157,7 +157,7 @@ func (gu *gachaUseCase) Gacha(gachaTimes int32, userID string) ([]*GachaResult, 
 	}()
 	// 3-1. バルクインサート
 	if len(newItemSlice) != 0 {
-		if err := gu.ucItemRepository.BulkInsertUCItemSlice(newItemSlice, tx); err != nil {
+		if err := gu.ucItemRepository.BulkInsert(newItemSlice, tx); err != nil {
 			myErr := myerror.NewMyErr(err, 500)
 			return nil, myErr
 		}
@@ -260,7 +260,7 @@ func (gu *gachaUseCase) CreateGachaResults(gettingItemSlice []string, hasGotItem
 func (gu *gachaUseCase) BulkInsertAndUpdate(newItemSlice []*ucm.UserCollectionItem, user *um.UserL, tx *sql.Tx) error {
 	// 3-1. バルクインサート
 	if len(newItemSlice) != 0 {
-		if err := gu.ucItemRepository.BulkInsertUCItemSlice(newItemSlice, tx); err != nil {
+		if err := gu.ucItemRepository.BulkInsert(newItemSlice, tx); err != nil {
 			return err
 		}
 	}

@@ -10,8 +10,8 @@ import (
 
 type gachaProbPersistence struct{}
 
-// NewGachaProbPersistence Gachaprob データに関するPersistence を生成
-func NewGachaProbPersistence() repository.GachaProbRepository {
+// NewPersistence Gachaprob データに関するPersistence を生成
+func NewPersistence() repository.GachaProbRepo {
 	return &gachaProbPersistence{}
 }
 

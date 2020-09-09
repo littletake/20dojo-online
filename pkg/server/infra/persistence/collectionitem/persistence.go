@@ -10,8 +10,8 @@ import (
 
 type cItemPersistence struct{}
 
-// NewCItemPersistence User データに関するPersistence を生成
-func NewCItemPersistence() repository.CItemRepository {
+// NewPersistence CollectionItem データに関するPersistence を生成
+func NewPersistence() repository.CollectionItemRepo {
 	return &cItemPersistence{}
 }
 

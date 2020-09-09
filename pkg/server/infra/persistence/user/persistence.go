@@ -11,8 +11,8 @@ import (
 
 type userPersistence struct{}
 
-// NewUserPersistence User データに関するPersistence を生成
-func NewUserPersistence() repository.UserRepository {
+// NewPersistence User データに関するPersistence を生成
+func NewPersistence() repository.UserRepo {
 	return &userPersistence{}
 }
 

@@ -10,8 +10,8 @@ import (
 
 type txPersistence struct{}
 
-// NewTxPersistence Tx に関するPersistenceを生成
-func NewTxPersistence() repository.TxRepository {
+// NewPersistence Tx に関するPersistenceを生成
+func NewPersistence() repository.TxRepo {
 	return &txPersistence{}
 }
 

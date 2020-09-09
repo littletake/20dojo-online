@@ -13,13 +13,13 @@ import (
 
 type ucItemPersistence struct{}
 
-// NewUCItemPersistence UserCollectionItem データに関するPersistence を生成
-func NewUCItemPersistence() repository.UCItemRepository {
+// NewPersistence UserCollectionItem データに関するPersistence を生成
+func NewPersistence() repository.UserCollectionItemRepo {
 	return &ucItemPersistence{}
 }
 
-// SelectUCItemSliceByUserID userIDを条件にレコードを取得する
-func (up ucItemPersistence) SelectUCItemSliceByUserID(userID string) ([]*model.UserCollectionItem, error) {
+// SelectSliceByUserID userIDを条件にレコードを取得する
+func (up ucItemPersistence) SelectSliceByUserID(userID string) ([]*model.UserCollectionItem, error) {
 	rows, err := db.Conn.Query("SELECT * FROM user_collection_item WHERE user_id = ?", userID)
 	if err != nil {
 		return nil, err
@@ -27,8 +27,8 @@ func (up ucItemPersistence) SelectUCItemSliceByUserID(userID string) ([]*model.U
 	return convertToUCItemSlice(rows)
 }
 
-// BulkInsertUserCollectionItem データベースに複数レコードを登録する
-func (up ucItemPersistence) BulkInsertUCItemSlice(records []*model.UserCollectionItem, tx *sql.Tx) error {
+// BulkInsert データベースに複数レコードを登録する
+func (up ucItemPersistence) BulkInsert(records []*model.UserCollectionItem, tx *sql.Tx) error {
 	var queryString strings.Builder
 	queryString.WriteString("INSERT INTO user_collection_item (user_id, collection_item_id) VALUES ")
 	for i, record := range records {

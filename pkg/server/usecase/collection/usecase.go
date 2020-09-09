@@ -17,14 +17,14 @@ type CollectionUseCase interface {
 }
 
 type collectionUseCase struct {
-	userRepository   ur.UserRepository
-	cItemRepository  cr.CItemRepository
-	ucItemRepository ucr.UCItemRepository
+	userRepository   ur.UserRepo
+	cItemRepository  cr.CollectionItemRepo
+	ucItemRepository ucr.UserCollectionItemRepo
 }
 
 // NewCollectionUseCase UseCaseを生成
-func NewCollectionUseCase(ur ur.UserRepository, cr cr.CItemRepository,
-	ucr ucr.UCItemRepository) CollectionUseCase {
+func NewCollectionUseCase(ur ur.UserRepo, cr cr.CollectionItemRepo,
+	ucr ucr.UserCollectionItemRepo) CollectionUseCase {
 	return &collectionUseCase{
 		userRepository:   ur,
 		cItemRepository:  cr,
@@ -63,7 +63,7 @@ func (cu *collectionUseCase) GetCollectionSlice(userID string) ([]*CollectionIte
 	}
 	// 現ユーザが保持しているアイテムの情報をまとめる -> hasGotItemMap
 	// table: user_collection_itemに対してuserIDのものを取得
-	ucItemSlice, err := cu.ucItemRepository.SelectUCItemSliceByUserID(userID)
+	ucItemSlice, err := cu.ucItemRepository.SelectSliceByUserID(userID)
 	if err != nil {
 		myErr := myerror.NewMyErr(err, 500)
 		return nil, myErr

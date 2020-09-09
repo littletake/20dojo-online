@@ -26,10 +26,10 @@ import (
 // Serve HTTPサーバを起動する
 func Serve(addr string) {
 	// レイヤードアーキテクチャ
-	userPersistence := up.NewUserPersistence()
-	cItemPersistence := cp.NewCItemPersistence()
-	ucItemPersistence := ucp.NewUCItemPersistence()
-	gachaProbPersistence := gp.NewGachaProbPersistence()
+	userPersistence := up.NewPersistence()
+	cItemPersistence := cp.NewPersistence()
+	ucItemPersistence := ucp.NewPersistence()
+	gachaProbPersistence := gp.NewPersistence()
 
 	userUseCase := uu.NewUserUseCase(userPersistence)
 	gameUseCase := gu.NewGameUseCase(userPersistence)
