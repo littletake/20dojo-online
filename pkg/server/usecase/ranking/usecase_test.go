@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"20dojo-online/pkg/constant"
-	"20dojo-online/pkg/server/domain/model"
+	model "20dojo-online/pkg/server/domain/model/user"
 	"20dojo-online/pkg/server/domain/repository/user/mock_user"
 
 	"github.com/golang/mock/gomock"
