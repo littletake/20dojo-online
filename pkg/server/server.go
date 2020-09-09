@@ -53,7 +53,7 @@ func Serve(addr string) {
 	gachaHandler := gch.NewGachaHandler(gachaUseCase)
 	collectionHandler := ch.NewCollectionHandler(collectionUseCase)
 	// TODO: httpとauthを一つにしたい
-	m := middleware.NewMiddleware(userUseCase)
+	m := middleware.NewMyMiddleware(userUseCase)
 
 	/* ===== URLマッピングを行う ===== */
 	// // 設定情報取得

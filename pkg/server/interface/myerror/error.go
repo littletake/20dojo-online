@@ -11,32 +11,36 @@ import (
 // MyErr エラーコードを追加した独自の型
 type MyErr struct {
 	// TODO: pkg/errorsを使いたい
-	ErrMsg  error
-	ErrCode int32
+	errMsg  error
+	errCode int32
 }
 
 // NewMyErr MyErrの定義
 func NewMyErr(errMsg error, errCode int32) *MyErr {
 	myErr := &MyErr{
-		ErrMsg:  errMsg,
-		ErrCode: errCode,
+		errMsg:  errMsg,
+		errCode: errCode,
 	}
 	return myErr
 }
 
 // HandleErr エラー時の処理
 func (myErr *MyErr) HandleErr(writer http.ResponseWriter) {
-	if myErr.ErrCode == 400 {
-		log.Println(myErr.ErrMsg)
-		response.BadRequest(writer, myErr.ErrMsg.Error())
+	if myErr.errCode == http.StatusBadRequest {
+		log.Println(myErr.errMsg)
+		response.BadRequest(writer, myErr.errMsg.Error())
 		return
-	} else if myErr.ErrCode == 500 {
-		log.Println(myErr.ErrMsg)
-		response.InternalServerError(writer, myErr.ErrMsg.Error())
+	} else if myErr.errCode == http.StatusInternalServerError {
+		log.Println(myErr.errMsg)
+		response.InternalServerError(writer, myErr.errMsg.Error())
 		return
 	} else {
 		// TODO: エラーコードが400,500以外の場合の処理考える
-		errMsg := fmt.Sprintf("!! errorCode mistake. ErrCode: %d !!", myErr.ErrCode)
+		errMsg := fmt.Sprintf("!! errorCode mistake. errCode: %d !!", myErr.errCode)
 		panic(errMsg)
 	}
+}
+
+func (myErr *MyErr) Error() string {
+	return myErr.errMsg.Error()
 }

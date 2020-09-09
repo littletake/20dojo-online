@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"20dojo-online/pkg/dcontext"
+	"20dojo-online/pkg/server/interface/middleware"
 	"20dojo-online/pkg/server/interface/myerror"
 	"20dojo-online/pkg/server/interface/response"
 	usecase "20dojo-online/pkg/server/usecase/collection"
@@ -12,7 +13,7 @@ import (
 
 // CollectionHandler Handlerのインターフェース
 type CollectionHandler interface {
-	HandleCollectionList() http.HandlerFunc
+	HandleCollectionList() middleware.MyHandlerFunc
 }
 
 // collectionHandler usecaseとhandlerをつなぐもの
@@ -28,8 +29,8 @@ func NewCollectionHandler(cu usecase.CollectionUseCase) CollectionHandler {
 }
 
 // HandleCollectionList ガチャ実行
-func (ch *collectionHandler) HandleCollectionList() http.HandlerFunc {
-	return func(writer http.ResponseWriter, request *http.Request) {
+func (ch *collectionHandler) HandleCollectionList() middleware.MyHandlerFunc {
+	return func(writer http.ResponseWriter, request *http.Request) *myerror.MyErr {
 		// collectionListResponse レスポンス形式
 		type collectionListResponse struct {
 			Collections []*usecase.CollectionItemResult `json:"collections"`
@@ -41,20 +42,19 @@ func (ch *collectionHandler) HandleCollectionList() http.HandlerFunc {
 		if userID == "" {
 			myErr := myerror.NewMyErr(
 				fmt.Errorf("userID is empty"),
-				500,
+				http.StatusInternalServerError,
 			)
-			myErr.HandleErr(writer)
-			return
+			return myErr
 		}
 		// 結果を取得
 		collectionList, myErr := ch.collectionUseCase.GetCollectionSlice(userID)
 		if myErr != nil {
-			myErr.HandleErr(writer)
-			return
+			return myErr
 		}
 		response.Success(writer, &collectionListResponse{
 			Collections: collectionList,
 		})
+		return myErr
 
 	}
 }

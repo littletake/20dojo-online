@@ -7,6 +7,7 @@ import (
 
 	"20dojo-online/pkg/constant"
 	"20dojo-online/pkg/dcontext"
+	"20dojo-online/pkg/server/interface/middleware"
 	"20dojo-online/pkg/server/interface/myerror"
 	"20dojo-online/pkg/server/interface/response"
 	usecase "20dojo-online/pkg/server/usecase/gacha"
@@ -14,7 +15,7 @@ import (
 
 // GachaHandler UserにおけるHandlerのインターフェース
 type GachaHandler interface {
-	HandleGachaDraw() http.HandlerFunc
+	HandleGachaDraw() middleware.MyHandlerFunc
 }
 
 // gachaHandler usecaseとhandlerをつなぐもの
@@ -30,8 +31,8 @@ func NewGachaHandler(gu usecase.GachaUseCase) GachaHandler {
 }
 
 // HandleGachaDraw ガチャ実行
-func (gh *gachaHandler) HandleGachaDraw() http.HandlerFunc {
-	return func(writer http.ResponseWriter, request *http.Request) {
+func (gh *gachaHandler) HandleGachaDraw() middleware.MyHandlerFunc {
+	return func(writer http.ResponseWriter, request *http.Request) *myerror.MyErr {
 		// gachaDrawRequest リクエスト形式
 		type gachaDrawRequest struct {
 			Times int32 `json:"times"`
@@ -45,19 +46,20 @@ func (gh *gachaHandler) HandleGachaDraw() http.HandlerFunc {
 		// リクエストBodyから更新情報を取得
 		var requestBody gachaDrawRequest
 		if err := json.NewDecoder(request.Body).Decode(&requestBody); err != nil {
-			myErr := myerror.NewMyErr(err, 500)
-			myErr.HandleErr(writer)
-			return
+			myErr := myerror.NewMyErr(
+				err,
+				http.StatusInternalServerError,
+			)
+			return myErr
 		}
 		// gachaTimes ガチャの回数
 		gachaTimes := requestBody.Times
 		if gachaTimes != constant.MinGachaTimes && gachaTimes != constant.MaxGachaTimes {
 			myErr := myerror.NewMyErr(
 				fmt.Errorf("requestBody'times' must be 1 or 10. times=%d", gachaTimes),
-				400,
+				http.StatusBadRequest,
 			)
-			myErr.HandleErr(writer)
-			return
+			return myErr
 		}
 		// コンテキストからuserID取得
 		ctx := request.Context()
@@ -65,19 +67,18 @@ func (gh *gachaHandler) HandleGachaDraw() http.HandlerFunc {
 		if userID == "" {
 			myErr := myerror.NewMyErr(
 				fmt.Errorf("userID is empty"),
-				500,
+				http.StatusInternalServerError,
 			)
-			myErr.HandleErr(writer)
-			return
+			return myErr
 		}
 		// 結果を取得
 		gachaResultSlice, myErr := gh.gachaUseCase.Gacha(gachaTimes, userID)
 		if myErr != nil {
-			myErr.HandleErr(writer)
-			return
+			return myErr
 		}
 		response.Success(writer, &gachaDrawResponse{
 			Results: gachaResultSlice,
 		})
+		return nil
 	}
 }

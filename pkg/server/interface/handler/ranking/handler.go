@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"20dojo-online/pkg/server/interface/middleware"
 	"20dojo-online/pkg/server/interface/myerror"
 	"20dojo-online/pkg/server/interface/response"
 	usecase "20dojo-online/pkg/server/usecase/ranking"
@@ -12,7 +13,7 @@ import (
 
 // RankingHandler UserにおけるHandlerのインターフェース
 type RankingHandler interface {
-	HandleRankingList() http.HandlerFunc
+	HandleRankingList() middleware.MyHandlerFunc
 }
 
 // rankingHandler usecaseとhandlerをつなぐもの
@@ -28,8 +29,8 @@ func NewRankingHandler(ru usecase.RankingUseCase) RankingHandler {
 }
 
 // HandleRankingList ランキング取得
-func (rh *rankingHandler) HandleRankingList() http.HandlerFunc {
-	return func(writer http.ResponseWriter, request *http.Request) {
+func (rh *rankingHandler) HandleRankingList() middleware.MyHandlerFunc {
+	return func(writer http.ResponseWriter, request *http.Request) *myerror.MyErr {
 		// rankInfo ランキング情報
 		type rankInfo struct {
 			UserID   string `json:"userId"`
@@ -48,30 +49,29 @@ func (rh *rankingHandler) HandleRankingList() http.HandlerFunc {
 		if len(query["start"]) != 1 {
 			myErr := myerror.NewMyErr(
 				fmt.Errorf("the length of query must be one"),
-				500,
+				http.StatusInternalServerError,
 			)
-			myErr.HandleErr(writer)
-			return
+			return myErr
 		}
 		startNum, err := strconv.Atoi(query["start"][0])
 		if err != nil {
-			myErr := myerror.NewMyErr(err, 500)
-			myErr.HandleErr(writer)
-			return
+			myErr := myerror.NewMyErr(
+				err,
+				http.StatusInternalServerError,
+			)
+			return myErr
 		}
 		if startNum <= 0 {
 			myErr := myerror.NewMyErr(
 				fmt.Errorf("query'start' must be positive"),
-				400,
+				http.StatusBadRequest,
 			)
-			myErr.HandleErr(writer)
-			return
+			return myErr
 		}
 		// 対象範囲のユーザのスライス取得
 		users, myErr := rh.rankingUseCase.GetUsersByHighScore(int32(startNum))
 		if myErr != nil {
-			myErr.HandleErr(writer)
-			return
+			return myErr
 		}
 		rankingList := make([]rankInfo, len(users), len(users))
 		for i, user := range users {
@@ -86,5 +86,6 @@ func (rh *rankingHandler) HandleRankingList() http.HandlerFunc {
 		response.Success(writer, &rankingListResponse{
 			Ranks: rankingList,
 		})
+		return nil
 	}
 }

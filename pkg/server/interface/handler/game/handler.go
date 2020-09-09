@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"20dojo-online/pkg/dcontext"
+	"20dojo-online/pkg/server/interface/middleware"
 	"20dojo-online/pkg/server/interface/myerror"
 	"20dojo-online/pkg/server/interface/response"
 	usecase "20dojo-online/pkg/server/usecase/game"
@@ -13,7 +14,7 @@ import (
 
 // GameHandler gameにおけるHandler
 type GameHandler interface {
-	HandleGameFinish() http.HandlerFunc
+	HandleGameFinish() middleware.MyHandlerFunc
 }
 
 // gameHandler usecaseとhandlerをつなぐもの
@@ -29,8 +30,8 @@ func NewGameHandler(gu usecase.GameUseCase) GameHandler {
 }
 
 // HandleGameFinish インゲーム終了処理
-func (gh *gameHandler) HandleGameFinish() http.HandlerFunc {
-	return func(writer http.ResponseWriter, request *http.Request) {
+func (gh *gameHandler) HandleGameFinish() middleware.MyHandlerFunc {
+	return func(writer http.ResponseWriter, request *http.Request) *myerror.MyErr {
 		// GameFinishRequest ゲーム終了request
 		type GameFinishRequest struct {
 			Score int32 `json:"score"`
@@ -46,27 +47,28 @@ func (gh *gameHandler) HandleGameFinish() http.HandlerFunc {
 		if userID == "" {
 			myErr := myerror.NewMyErr(
 				fmt.Errorf("userID is empty"),
-				500,
+				http.StatusInternalServerError,
 			)
-			myErr.HandleErr(writer)
-			return
+			return myErr
 		}
 		// リクエストBodyから更新後情報を取得
 		var requestBody GameFinishRequest
 		if err := json.NewDecoder(request.Body).Decode(&requestBody); err != nil {
-			myErr := myerror.NewMyErr(err, 500)
-			myErr.HandleErr(writer)
-			return
+			myErr := myerror.NewMyErr(
+				err,
+				http.StatusInternalServerError,
+			)
+			return myErr
 		}
 		// coinとscoreを更新
 		coin, myErr := gh.gameUseCase.UpdateCoinAndHighScore(userID, requestBody.Score)
 		if myErr != nil {
-			myErr.HandleErr(writer)
-			return
+			return myErr
 		}
 		// レスポンスに必要な情報を詰めて返却
 		response.Success(writer, &GameFinishResponse{
 			Coin: coin,
 		})
+		return nil
 	}
 }
