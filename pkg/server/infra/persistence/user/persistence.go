@@ -13,8 +13,10 @@ type userPersistence struct {
 }
 
 // NewPersistence User データに関するPersistence を生成
-func NewPersistence() repository.UserRepo {
-	return &userPersistence{}
+func NewPersistence(db *sql.DB) repository.UserRepo {
+	return &userPersistence{
+		db: db,
+	}
 }
 
 func (up userPersistence) SelectUserByUserID(id string) (*model.UserL, error) {

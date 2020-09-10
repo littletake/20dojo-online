@@ -12,8 +12,10 @@ type gachaProbPersistence struct {
 }
 
 // NewPersistence Gachaprob データに関するPersistence を生成
-func NewPersistence() repository.GachaProbRepo {
-	return &gachaProbPersistence{}
+func NewPersistence(db *sql.DB) repository.GachaProbRepo {
+	return &gachaProbPersistence{
+		db: db,
+	}
 }
 
 func (gp gachaProbPersistence) SelectAllGachaProb() ([]*model.GachaProb, error) {

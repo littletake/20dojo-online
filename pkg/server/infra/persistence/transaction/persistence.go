@@ -12,8 +12,10 @@ type txPersistence struct {
 }
 
 // NewPersistence Tx に関するPersistenceを生成
-func NewPersistence() repository.TxRepo {
-	return &txPersistence{}
+func NewPersistence(db *sql.DB) repository.TxRepo {
+	return &txPersistence{
+		db: db,
+	}
 }
 
 // Transaction トランザクション処理

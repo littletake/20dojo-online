@@ -16,8 +16,10 @@ type ucItemPersistence struct {
 }
 
 // NewPersistence UserCollectionItem データに関するPersistence を生成
-func NewPersistence() repository.UserCollectionItemRepo {
-	return &ucItemPersistence{}
+func NewPersistence(db *sql.DB) repository.UserCollectionItemRepo {
+	return &ucItemPersistence{
+		db: db,
+	}
 }
 
 // SelectSliceByUserID userIDを条件にレコードを取得する
