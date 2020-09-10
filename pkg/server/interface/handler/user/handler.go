@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/google/uuid"
-
 	"20dojo-online/pkg/dcontext"
 	"20dojo-online/pkg/server/interface/middleware"
 	"20dojo-online/pkg/server/interface/myerror"
@@ -31,6 +29,16 @@ func NewUserHandler(uu usecase.UserUseCase) UserHandler {
 	return &userHandler{
 		userUseCase: uu,
 	}
+}
+
+// UserCreateRequest ユーザ作成request
+type UserCreateRequest struct {
+	Name string `json:"name"`
+}
+
+// UserCreateResponse ユーザ作成response
+type UserCreateResponse struct {
+	Token string `json:"token"`
 }
 
 // HandleUserGet ユーザ情報取得
@@ -73,17 +81,8 @@ func (uh *userHandler) HandleUserGet() middleware.MyHandlerFunc {
 // HandleUserCreate　ユーザ作成
 func (uh *userHandler) HandleUserCreate() middleware.MyHandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) *myerror.MyErr {
-		// userCreateRequest ユーザ作成request
-		type userCreateRequest struct {
-			Name string `json:"name"`
-		}
-		// userCreateResponse ユーザ作成response
-		type userCreateResponse struct {
-			Token string `json:"token"`
-		}
-
 		// リクエストBodyから更新情報を取得
-		var requestBody userCreateRequest
+		var requestBody UserCreateRequest
 		if err := json.NewDecoder(request.Body).Decode(&requestBody); err != nil {
 			myErr := myerror.NewMyErr(
 				err,
@@ -91,45 +90,27 @@ func (uh *userHandler) HandleUserCreate() middleware.MyHandlerFunc {
 			)
 			return myErr
 		}
-		// ユーザを登録
-		// UUIDでユーザIDを生成する
-		userID, err := uuid.NewRandom()
-		if err != nil {
-			myErr := myerror.NewMyErr(
-				err,
-				http.StatusInternalServerError,
-			)
-			return myErr
-		}
-		// UUIDで認証トークンを生成する
-		token, err := uuid.NewRandom()
-		if err != nil {
-			myErr := myerror.NewMyErr(
-				err,
-				http.StatusInternalServerError,
-			)
-			return myErr
-		}
 
-		authToken, myErr := uh.userUseCase.RegisterUserFromUserName(requestBody.Name, userID.String(), token.String())
+		authToken, myErr := uh.userUseCase.RegisterUserFromUserName(requestBody.Name)
 		if myErr != nil {
 			return myErr
 		}
 		// 生成した認証トークンを返却
-		response.Success(writer, &userCreateResponse{
+		response.Success(writer, &UserCreateResponse{
 			Token: authToken,
 		})
 		return nil
 	}
 }
 
+// UserUpdateRequest ユーザ更新request
+type UserUpdateRequest struct {
+	Name string `json:"name"`
+}
+
 // HandleUserUpdate　ユーザ情報更新
 func (uh *userHandler) HandleUserUpdate() middleware.MyHandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) *myerror.MyErr {
-		// userUpdateRequest ユーザ更新request
-		type userUpdateRequest struct {
-			Name string `json:"name"`
-		}
 
 		// コンテキストからuserID取得
 		ctx := request.Context()
@@ -142,7 +123,7 @@ func (uh *userHandler) HandleUserUpdate() middleware.MyHandlerFunc {
 			return myErr
 		}
 		// requestBodyから更新情報を取得
-		var requestBody userUpdateRequest
+		var requestBody UserUpdateRequest
 		if err := json.NewDecoder(request.Body).Decode(&requestBody); err != nil {
 			myErr := myerror.NewMyErr(
 				err,

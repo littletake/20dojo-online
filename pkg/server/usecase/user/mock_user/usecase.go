@@ -65,18 +65,18 @@ func (mr *MockUserUseCaseMockRecorder) GetUserByAuthToken(token interface{}) *go
 }
 
 // RegisterUserFromUserName mocks base method
-func (m *MockUserUseCase) RegisterUserFromUserName(userName, userID, token string) (string, *myerror.MyErr) {
+func (m *MockUserUseCase) RegisterUserFromUserName(userName string) (string, *myerror.MyErr) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RegisterUserFromUserName", userName, userID, token)
+	ret := m.ctrl.Call(m, "RegisterUserFromUserName", userName)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(*myerror.MyErr)
 	return ret0, ret1
 }
 
 // RegisterUserFromUserName indicates an expected call of RegisterUserFromUserName
-func (mr *MockUserUseCaseMockRecorder) RegisterUserFromUserName(userName, userID, token interface{}) *gomock.Call {
+func (mr *MockUserUseCaseMockRecorder) RegisterUserFromUserName(userName interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterUserFromUserName", reflect.TypeOf((*MockUserUseCase)(nil).RegisterUserFromUserName), userName, userID, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterUserFromUserName", reflect.TypeOf((*MockUserUseCase)(nil).RegisterUserFromUserName), userName)
 }
 
 // UpdateUserName mocks base method

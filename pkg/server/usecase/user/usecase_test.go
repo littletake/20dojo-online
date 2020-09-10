@@ -3,6 +3,8 @@ package user
 import (
 	"testing"
 
+	"github.com/google/uuid"
+
 	model "20dojo-online/pkg/server/domain/model/user"
 	"20dojo-online/pkg/server/domain/repository/user/mock_user"
 
@@ -30,7 +32,7 @@ func TestUseCase_GetUserByUserID(t *testing.T) {
 	mockUserRepository := mock_user.NewMockUserRepo(ctrl)
 	mockUserRepository.EXPECT().SelectUserByUserID(request).Return(expected, nil)
 
-	usecase := NewUserUseCase(mockUserRepository)
+	usecase := NewUserUseCase(mockUserRepository, uuid.NewRandom)
 	actual, myErr := usecase.GetUserByUserID(request)
 	assert.Equal(t, expected, actual)
 	assert.Empty(t, myErr)
@@ -48,17 +50,28 @@ func TestUseCase_GetUserByAuthToken(t *testing.T) {
 	mockUserRepository := mock_user.NewMockUserRepo(ctrl)
 	mockUserRepository.EXPECT().SelectUserByAuthToken(request).Return(expected, nil)
 
-	usecase := NewUserUseCase(mockUserRepository)
+	usecase := NewUserUseCase(mockUserRepository, uuid.NewRandom)
 	actual, myErr := usecase.GetUserByAuthToken(request)
 	assert.Equal(t, expected, actual)
 	assert.Empty(t, myErr)
 }
 
+func createMockUUID() (uuid.UUID, error) {
+	var tmp [16]byte = [16]byte{}
+	return tmp, nil
+}
+
 func TestUseCase_RegisterUserFromUserName(t *testing.T) {
+	exampleUser := &model.UserL{
+		ID:        "00000000-0000-0000-0000-000000000000",
+		AuthToken: "00000000-0000-0000-0000-000000000000",
+		Name:      "example_name",
+		HighScore: 0,
+		Coin:      0,
+	}
+
 	// request
 	requestName := exampleUser.Name
-	requestID := exampleUser.ID
-	requestToken := exampleUser.AuthToken
 	// response
 	expected := exampleUser.AuthToken
 
@@ -68,8 +81,8 @@ func TestUseCase_RegisterUserFromUserName(t *testing.T) {
 	mockUserRepository := mock_user.NewMockUserRepo(ctrl)
 	mockUserRepository.EXPECT().InsertUser(exampleUser).Return(nil)
 
-	usecase := NewUserUseCase(mockUserRepository)
-	actual, myErr := usecase.RegisterUserFromUserName(requestName, requestID, requestToken)
+	usecase := NewUserUseCase(mockUserRepository, createMockUUID)
+	actual, myErr := usecase.RegisterUserFromUserName(requestName)
 	assert.Equal(t, expected, actual)
 	assert.Empty(t, myErr)
 }
@@ -94,7 +107,7 @@ func TestUseCase_UpdateUserName(t *testing.T) {
 	mockUserRepository.EXPECT().SelectUserByUserID(requestID).Return(exampleUser, nil)
 	mockUserRepository.EXPECT().UpdateUserByUser(expected).Return(nil)
 
-	usecase := NewUserUseCase(mockUserRepository)
+	usecase := NewUserUseCase(mockUserRepository, uuid.NewRandom)
 	actual, myErr := usecase.UpdateUserName(requestID, requestName)
 	assert.Equal(t, expected, actual)
 	assert.Empty(t, myErr)

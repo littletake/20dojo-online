@@ -4,10 +4,12 @@ package user
 
 import (
 	"fmt"
+	"net/http"
+
+	"github.com/google/uuid"
 
 	model "20dojo-online/pkg/server/domain/model/user"
 	ur "20dojo-online/pkg/server/domain/repository/user"
-
 	"20dojo-online/pkg/server/interface/myerror"
 )
 
@@ -15,18 +17,20 @@ import (
 type UserUseCase interface {
 	GetUserByUserID(userID string) (*model.UserL, *myerror.MyErr)
 	GetUserByAuthToken(token string) (*model.UserL, *myerror.MyErr)
-	RegisterUserFromUserName(userName string, userID string, token string) (string, *myerror.MyErr)
+	RegisterUserFromUserName(userName string) (string, *myerror.MyErr)
 	UpdateUserName(userID string, userName string) (*model.UserL, *myerror.MyErr)
 }
 
 type userUseCase struct {
 	userRepository ur.UserRepo
+	createUUID     func() (uuid.UUID, error)
 }
 
 // NewUserUseCase Userデータに関するUseCaseを生成
-func NewUserUseCase(ur ur.UserRepo) UserUseCase {
+func NewUserUseCase(ur ur.UserRepo, f func() (uuid.UUID, error)) UserUseCase {
 	return &userUseCase{
 		userRepository: ur,
+		createUUID:     f,
 	}
 }
 
@@ -67,11 +71,30 @@ func (uu *userUseCase) GetUserByAuthToken(token string) (*model.UserL, *myerror.
 }
 
 // RegisterUserFromUserName Userデータを登録
-func (uu *userUseCase) RegisterUserFromUserName(userName string, userID string, token string) (string, *myerror.MyErr) {
+func (uu *userUseCase) RegisterUserFromUserName(userName string) (string, *myerror.MyErr) {
+	// userID
+	userID, err := uu.createUUID()
+	if err != nil {
+		myErr := myerror.NewMyErr(
+			err,
+			http.StatusInternalServerError,
+		)
+		return "", myErr
+	}
+	// token
+	token, err := uu.createUUID()
+	if err != nil {
+		myErr := myerror.NewMyErr(
+			err,
+			http.StatusInternalServerError,
+		)
+		return "", myErr
+	}
+
 	// ユーザ作成
 	user := &model.UserL{
-		ID:        userID,
-		AuthToken: token,
+		ID:        userID.String(),
+		AuthToken: token.String(),
 		Name:      userName,
 		HighScore: 0,
 		Coin:      0,

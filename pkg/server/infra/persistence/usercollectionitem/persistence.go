@@ -8,7 +8,6 @@ import (
 
 	model "20dojo-online/pkg/server/domain/model/usercollectionitem"
 	repository "20dojo-online/pkg/server/domain/repository/usercollectionitem"
-	"20dojo-online/pkg/server/infra/db"
 )
 
 type ucItemPersistence struct {
@@ -24,7 +23,7 @@ func NewPersistence(db *sql.DB) repository.UserCollectionItemRepo {
 
 // SelectSliceByUserID userIDを条件にレコードを取得する
 func (up ucItemPersistence) SelectSliceByUserID(userID string) ([]*model.UserCollectionItem, error) {
-	rows, err := db.Conn.Query("SELECT * FROM user_collection_item WHERE user_id = ?", userID)
+	rows, err := up.db.Query("SELECT * FROM user_collection_item WHERE user_id = ?", userID)
 	if err != nil {
 		return nil, err
 	}

@@ -1,0 +1,22 @@
+{
+  "collections": [
+    {
+      "collectionID": "1001",
+      "name": "example1",
+      "rarity": 1,
+      "hasItem": true
+    },
+    {
+      "collectionID": "1002",
+      "name": "example2",
+      "rarity": 2,
+      "hasItem": false
+    },
+    {
+      "collectionID": "1003",
+      "name": "example3",
+      "rarity": 3,
+      "hasItem": false
+    }
+  ]
+}

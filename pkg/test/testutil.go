@@ -21,15 +21,11 @@ func AssertResponse(t *testing.T, res *http.Response, code int, path string) {
 // AssertResponseHeader assert response header.
 func AssertResponseHeader(t *testing.T, res *http.Response, code int) {
 	t.Helper()
+	// statusCode
+	assert.Equal(t, code, res.StatusCode)
+	// content-type
+	assert.Equal(t, "application/json", res.Header.Get("Content-Type"))
 
-	// ステータスコードのチェック
-	if code != res.StatusCode {
-		t.Errorf("expected status code is '%d',\n but actual given code is '%d'", code, res.StatusCode)
-	}
-	// Content-Typeのチェック
-	if expected := "application/json"; res.Header.Get("Content-Type") != expected {
-		t.Errorf("unexpected response Content-Type,\n expected: %#v,\n but given #%v", expected, res.Header.Get("Content-Type"))
-	}
 }
 
 // AssertResponseBodyWithFile assert response body with test file.
