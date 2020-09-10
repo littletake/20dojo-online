@@ -39,13 +39,16 @@ func (uu *userUseCase) GetUserByUserID(userID string) (*model.UserL, *myerror.My
 	// idと照合するユーザを取得
 	user, err := uu.userRepository.SelectUserByUserID(userID)
 	if err != nil {
-		myErr := myerror.NewMyErr(err, 500)
+		myErr := myerror.NewMyErr(
+			err,
+			http.StatusInternalServerError,
+		)
 		return nil, myErr
 	}
 	if user == nil {
 		myErr := myerror.NewMyErr(
-			fmt.Errorf("user not found"),
-			500,
+			fmt.Errorf("user not found. userID=%s", userID),
+			http.StatusBadRequest,
 		)
 		return nil, myErr
 	}
@@ -57,13 +60,16 @@ func (uu *userUseCase) GetUserByAuthToken(token string) (*model.UserL, *myerror.
 	// tokenと照合するユーザを取得
 	user, err := uu.userRepository.SelectUserByAuthToken(token)
 	if err != nil {
-		myErr := myerror.NewMyErr(err, 500)
+		myErr := myerror.NewMyErr(
+			err,
+			http.StatusInternalServerError,
+		)
 		return nil, myErr
 	}
 	if user == nil {
 		myErr := myerror.NewMyErr(
 			fmt.Errorf("user not found. token=%s", token),
-			400,
+			http.StatusBadRequest,
 		)
 		return nil, myErr
 	}
@@ -113,13 +119,16 @@ func (uu *userUseCase) UpdateUserName(userID string, userName string) (*model.Us
 	// idと照合するユーザを取得
 	user, err := uu.userRepository.SelectUserByUserID(userID)
 	if err != nil {
-		myErr := myerror.NewMyErr(err, 500)
+		myErr := myerror.NewMyErr(
+			err,
+			http.StatusInternalServerError,
+		)
 		return nil, myErr
 	}
 	if user == nil {
 		myErr := myerror.NewMyErr(
-			fmt.Errorf("user not found"),
-			500,
+			fmt.Errorf("user not found. userID=%s", userID),
+			http.StatusBadRequest,
 		)
 		return nil, myErr
 	}
@@ -127,7 +136,10 @@ func (uu *userUseCase) UpdateUserName(userID string, userName string) (*model.Us
 	user.Name = userName
 	// 更新を保存
 	if err := uu.userRepository.UpdateUserByUser(user); err != nil {
-		myErr := myerror.NewMyErr(err, 500)
+		myErr := myerror.NewMyErr(
+			err,
+			http.StatusInternalServerError,
+		)
 		return nil, myErr
 	}
 	return user, nil

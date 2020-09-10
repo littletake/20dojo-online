@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"fmt"
 	"math/rand"
+	"net/http"
 
 	"20dojo-online/pkg/constant"
 	cm "20dojo-online/pkg/server/domain/model/collectionitem"
@@ -27,6 +28,7 @@ type GachaUseCase interface {
 	CreateCItemSlice() *myerror.MyErr
 	GetItems(gachaTimes int32) []string
 	CreateGachaResults(gettingItemSlice []string, hasGotItemMap map[string]bool, userID string) ([]*GachaResult, []*ucm.UserCollectionItem)
+	BulkInsertAndUpdate(newItemSlice []*ucm.UserCollectionItem, user *um.UserL, tx *sql.Tx) error
 }
 
 type gachaUseCase struct {
@@ -140,43 +142,7 @@ func (gu *gachaUseCase) Gacha(gachaTimes int32, userID string) ([]*GachaResult, 
 		myErr := myerror.NewMyErr(err, 500)
 		return nil, myErr
 	}
-	// 	myErr := myerror.NewMyErr(err, 500)
-	// 	return nil, myErr
-	// }
-	// tx, err := db.Conn.Begin()
-	// if err != nil {
-	// 	myErr := myerror.NewMyErr(err, 500)
-	// 	return nil, myErr
-	// }
-	// // TODO: 書き方再検討
-	// defer func() {
-	// 	if err := recover(); err != nil {
-	// 		log.Println("!! PANIC !!")
-	// 		log.Println(err)
-	// 		if rollbackErr := tx.Rollback(); rollbackErr != nil {
-	// 			log.Println("failed to Rollback")
-	// 			log.Println(rollbackErr)
-	// 			// myErr := CreateMyErr(rollbackErr, 500)
-	// 			// return nil, myErr
-	// 		}
-	// 	}
-	// }()
-	// // 3-1. バルクインサート
-	// if len(newItemSlice) != 0 {
-	// 	if err := gu.ucItemRepository.BulkInsertUCItemSlice(newItemSlice, tx); err != nil {
-	// 		myErr := myerror.NewMyErr(err, 500)
-	// 		return nil, myErr
-	// 	}
-	// }
-	// // 3-2. ユーザの保持コイン更新
-	// if err := gu.userRepository.UpdateUserByUserInTx(user, tx); err != nil {
-	// 	myErr := myerror.NewMyErr(err, 500)
-	// 	return nil, myErr
-	// }
-	// if err := tx.Commit(); err != nil {
-	// 	myErr := myerror.NewMyErr(err, 500)
-	// 	return nil, myErr
-	// }
+
 	return gachaResultSlice, nil
 }
 
@@ -188,7 +154,10 @@ func (gu *gachaUseCase) CreateCItemSlice() *myerror.MyErr {
 	if !hasGotcItemSlice {
 		cItemSlice, err = gu.cItemRepository.SelectAllCollectionItem()
 		if err != nil {
-			myErr := myerror.NewMyErr(err, 500)
+			myErr := myerror.NewMyErr(
+				err,
+				http.StatusInternalServerError,
+			)
 			return myErr
 		}
 		hasGotcItemSlice = true
@@ -203,7 +172,10 @@ func (gu *gachaUseCase) CreateItemRatioSlice() *myerror.MyErr {
 	if !hasGotGachaProb {
 		gachaProbSlice, err := gu.gachaProbRepository.SelectAllGachaProb()
 		if err != nil {
-			myErr := myerror.NewMyErr(err, 500)
+			myErr := myerror.NewMyErr(
+				err,
+				http.StatusInternalServerError,
+			)
 			return myErr
 		}
 		itemRatioSlice = make([]int32, len(gachaProbSlice))
@@ -262,7 +234,6 @@ func (gu *gachaUseCase) CreateGachaResults(gettingItemSlice []string, hasGotItem
 
 }
 
-// TODO: 未完成
 func (gu *gachaUseCase) BulkInsertAndUpdate(newItemSlice []*ucm.UserCollectionItem, user *um.UserL, tx *sql.Tx) error {
 	// 3-1. バルクインサート
 	if len(newItemSlice) != 0 {

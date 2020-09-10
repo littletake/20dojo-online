@@ -4,6 +4,7 @@ package collection
 
 import (
 	"fmt"
+	"net/http"
 
 	model "20dojo-online/pkg/server/domain/model/collectionitem"
 	cr "20dojo-online/pkg/server/domain/repository/collectionitem"
@@ -53,13 +54,16 @@ func (cu *collectionUseCase) GetCollectionSlice(userID string) ([]*CollectionIte
 	// ユーザデータの取得処理と存在チェックを実装
 	user, err := cu.userRepository.SelectUserByUserID(userID)
 	if err != nil {
-		myErr := myerror.NewMyErr(err, 500)
+		myErr := myerror.NewMyErr(
+			err,
+			http.StatusInternalServerError,
+		)
 		return nil, myErr
 	}
 	if user == nil {
 		myErr := myerror.NewMyErr(
-			fmt.Errorf("user not found"),
-			500,
+			fmt.Errorf("user not found. userID=%s", userID),
+			http.StatusBadRequest,
 		)
 		return nil, myErr
 	}
@@ -67,7 +71,10 @@ func (cu *collectionUseCase) GetCollectionSlice(userID string) ([]*CollectionIte
 	// table: user_collection_itemに対してuserIDのものを取得
 	ucItemSlice, err := cu.ucItemRepository.SelectSliceByUserID(userID)
 	if err != nil {
-		myErr := myerror.NewMyErr(err, 500)
+		myErr := myerror.NewMyErr(
+			err,
+			http.StatusInternalServerError,
+		)
 		return nil, myErr
 	}
 	// hasGotItemMap 既出アイテム一覧map
@@ -82,7 +89,10 @@ func (cu *collectionUseCase) GetCollectionSlice(userID string) ([]*CollectionIte
 	if !hasGotcItemSlice {
 		cItemSlice, err = cu.cItemRepository.SelectAllCollectionItem()
 		if err != nil {
-			myErr := myerror.NewMyErr(err, 500)
+			myErr := myerror.NewMyErr(
+				err,
+				http.StatusInternalServerError,
+			)
 			return nil, myErr
 		}
 		hasGotcItemSlice = true

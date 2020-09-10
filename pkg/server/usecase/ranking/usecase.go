@@ -4,6 +4,7 @@ package ranking
 
 import (
 	"fmt"
+	"net/http"
 
 	"20dojo-online/pkg/constant"
 	model "20dojo-online/pkg/server/domain/model/user"
@@ -33,14 +34,17 @@ func (ru *rankingUseCase) GetUsersByHighScore(startNum int32) ([]*model.UserL, *
 	// idと照合するユーザを取得
 	userSlice, err := ru.userRepository.SelectUsersByHighScore(constant.RankingListNumber, startNum)
 	if err != nil {
-		myErr := myerror.NewMyErr(err, 500)
+		myErr := myerror.NewMyErr(
+			err,
+			http.StatusInternalServerError,
+		)
 		return nil, myErr
 	}
-	// TODO: 順位範囲外の処理
+	// アイテム数以上の順位が開始位置に指定された場合の処理
 	if len(userSlice) == 0 {
 		myErr := myerror.NewMyErr(
 			fmt.Errorf("user not found. rank=%d", startNum),
-			400,
+			http.StatusBadRequest,
 		)
 		return nil, myErr
 	}

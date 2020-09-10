@@ -4,6 +4,7 @@ package game
 
 import (
 	"fmt"
+	"net/http"
 
 	ur "20dojo-online/pkg/server/domain/repository/user"
 
@@ -38,20 +39,23 @@ func (gu *gameUseCase) UpdateCoinAndHighScore(userID string, score int32) (int32
 	if score < 0 {
 		myErr := myerror.NewMyErr(
 			fmt.Errorf("score must be positive. score=%d", score),
-			400,
+			http.StatusBadRequest,
 		)
 		return 0, myErr
 	}
 	// ユーザ取得
 	user, err := gu.userRepository.SelectUserByUserID(userID)
 	if err != nil {
-		myErr := myerror.NewMyErr(err, 500)
+		myErr := myerror.NewMyErr(
+			err,
+			http.StatusInternalServerError,
+		)
 		return 0, myErr
 	}
 	if user == nil {
 		myErr := myerror.NewMyErr(
-			fmt.Errorf("user not found"),
-			500,
+			fmt.Errorf("user not found. userID=%s", userID),
+			http.StatusBadRequest,
 		)
 		return 0, myErr
 	}
@@ -66,7 +70,10 @@ func (gu *gameUseCase) UpdateCoinAndHighScore(userID string, score int32) (int32
 	}
 	// 更新を保存
 	if err := gu.userRepository.UpdateUserByUser(user); err != nil {
-		myErr := myerror.NewMyErr(err, 500)
+		myErr := myerror.NewMyErr(
+			err,
+			http.StatusInternalServerError,
+		)
 		return 0, myErr
 	}
 	return coin, nil
