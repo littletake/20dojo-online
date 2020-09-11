@@ -1,0 +1,4 @@
+{
+  "code": 400,
+  "message": "invalid query. the length of query must be one"
+}

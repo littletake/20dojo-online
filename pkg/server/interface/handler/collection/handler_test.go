@@ -1,6 +1,7 @@
 package collection
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -9,6 +10,7 @@ import (
 
 	model "20dojo-online/pkg/server/domain/model/user"
 	"20dojo-online/pkg/server/interface/middleware"
+	"20dojo-online/pkg/server/interface/myerror"
 	usecase "20dojo-online/pkg/server/usecase/collection"
 	"20dojo-online/pkg/server/usecase/collection/mock_collection"
 	"20dojo-online/pkg/server/usecase/user/mock_user"
@@ -46,26 +48,72 @@ func Test_HandleColletionList(t *testing.T) {
 		exampleCItemResult2,
 		exampleCItemResult3,
 	}
+	t.Run("正常系", func(t *testing.T) {
+		// リクエストの設定
+		req := httptest.NewRequest("GET", "/collection/list", nil)
+		req.Header.Set("x-token", exampleUser.AuthToken)
+		rec := httptest.NewRecorder()
 
-	// リクエストの設定
-	req := httptest.NewRequest("GET", "/collection/list", nil)
-	req.Header.Set("x-token", exampleUser.AuthToken)
-	rec := httptest.NewRecorder()
+		// モックの設定
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		mockUserUseCase := mock_user.NewMockUserUseCase(ctrl)
+		mockCollectionUseCase := mock_collection.NewMockCollectionUseCase(ctrl)
+		mockUserUseCase.EXPECT().GetUserByAuthToken(exampleUser.AuthToken).Return(exampleUser, nil)
+		mockCollectionUseCase.EXPECT().GetCollectionSlice(exampleUser.ID).Return(returnCollectionItems, nil)
+		// テストの実行
+		collectionHandler := NewCollectionHandler(mockCollectionUseCase)
+		m := middleware.NewMyMiddleware(mockUserUseCase)
+		handle := m.Get(m.Authenticate(collectionHandler.HandleCollectionList()))
+		handle.ServeHTTP(rec, req)
+		res := rec.Result()
+		defer res.Body.Close()
+		test.AssertResponse(t, res, http.StatusOK, "./testdata/handleCollectionListRes.golden")
+	})
+	t.Run("準正常系：コンテキストからuserID取得失敗", func(t *testing.T) {
+		// リクエストの設定
+		req := httptest.NewRequest("GET", "/collection/list", nil)
+		rec := httptest.NewRecorder()
 
-	// モックの設定
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	mockUserUseCase := mock_user.NewMockUserUseCase(ctrl)
-	mockCollectionUseCase := mock_collection.NewMockCollectionUseCase(ctrl)
-	mockUserUseCase.EXPECT().GetUserByAuthToken(exampleUser.AuthToken).Return(exampleUser, nil)
-	mockCollectionUseCase.EXPECT().GetCollectionSlice(exampleUser.ID).Return(returnCollectionItems, nil)
-	// テストの実行
-	collectionHandler := NewCollectionHandler(mockCollectionUseCase)
-	m := middleware.NewMyMiddleware(mockUserUseCase)
-	handle := m.Get(m.Authenticate(collectionHandler.HandleCollectionList()))
-	handle.ServeHTTP(rec, req)
-	res := rec.Result()
-	defer res.Body.Close()
-	test.AssertResponse(t, res, http.StatusOK, "./testdata/handleCollectionListRes.golden")
+		// モックの設定
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		mockUserUseCase := mock_user.NewMockUserUseCase(ctrl)
+		mockCollectionUseCase := mock_collection.NewMockCollectionUseCase(ctrl)
+		// テストの実行
+		collectionHandler := NewCollectionHandler(mockCollectionUseCase)
+		m := middleware.NewMyMiddleware(mockUserUseCase)
+		handle := m.Get(collectionHandler.HandleCollectionList())
+		handle.ServeHTTP(rec, req)
+		res := rec.Result()
+		defer res.Body.Close()
+		test.AssertResponse(t, res, http.StatusInternalServerError, "./testdata/errGetUserIDFromContext.golden")
+	})
+	t.Run("準正常系(GetCollectionSlice())：取得失敗", func(t *testing.T) {
+		// リクエストの設定
+		req := httptest.NewRequest("GET", "/collection/list", nil)
+		req.Header.Set("x-token", exampleUser.AuthToken)
+		rec := httptest.NewRecorder()
+		expectErr := myerror.NewMyErr(
+			fmt.Errorf("Internal Server Error"),
+			http.StatusInternalServerError,
+		)
+
+		// モックの設定
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		mockUserUseCase := mock_user.NewMockUserUseCase(ctrl)
+		mockCollectionUseCase := mock_collection.NewMockCollectionUseCase(ctrl)
+		mockUserUseCase.EXPECT().GetUserByAuthToken(exampleUser.AuthToken).Return(exampleUser, nil)
+		mockCollectionUseCase.EXPECT().GetCollectionSlice(exampleUser.ID).Return(returnCollectionItems, expectErr)
+		// テストの実行
+		collectionHandler := NewCollectionHandler(mockCollectionUseCase)
+		m := middleware.NewMyMiddleware(mockUserUseCase)
+		handle := m.Get(m.Authenticate(collectionHandler.HandleCollectionList()))
+		handle.ServeHTTP(rec, req)
+		res := rec.Result()
+		defer res.Body.Close()
+		test.AssertResponse(t, res, http.StatusInternalServerError, "./testdata/errGetCollectionSlice.golden")
+	})
 
 }

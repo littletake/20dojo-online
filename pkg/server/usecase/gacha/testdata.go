@@ -7,6 +7,7 @@ import (
 	ucm "20dojo-online/pkg/server/domain/model/usercollectionitem"
 )
 
+// ExampleUser UserLモデルの例
 var ExampleUser = &um.UserL{
 	ID:        "example_id",
 	AuthToken: "example_token",

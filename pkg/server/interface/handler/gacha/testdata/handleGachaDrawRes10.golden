@@ -1,0 +1,64 @@
+{
+  "results": [
+    {
+      "collectionID": "1001",
+      "name": "example1",
+      "rarity": 1,
+      "isNew": false
+    },
+    {
+      "collectionID": "1001",
+      "name": "example1",
+      "rarity": 1,
+      "isNew": false
+    },
+    {
+      "collectionID": "1001",
+      "name": "example1",
+      "rarity": 1,
+      "isNew": false
+    },
+    {
+      "collectionID": "1001",
+      "name": "example1",
+      "rarity": 1,
+      "isNew": false
+    },
+    {
+      "collectionID": "1002",
+      "name": "example2",
+      "rarity": 2,
+      "isNew": true
+    },
+    {
+      "collectionID": "1002",
+      "name": "example2",
+      "rarity": 2,
+      "isNew": true
+    },
+    {
+      "collectionID": "1002",
+      "name": "example2",
+      "rarity": 2,
+      "isNew": true
+    },
+    {
+      "collectionID": "1003",
+      "name": "example3",
+      "rarity": 3,
+      "isNew": true
+    },
+    {
+      "collectionID": "1003",
+      "name": "example3",
+      "rarity": 3,
+      "isNew": true
+    },
+    {
+      "collectionID": "1003",
+      "name": "example3",
+      "rarity": 3,
+      "isNew": true
+    }
+  ]
+}

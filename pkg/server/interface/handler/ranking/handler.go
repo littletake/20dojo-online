@@ -46,10 +46,10 @@ func (rh *rankingHandler) HandleRankingList() middleware.MyHandlerFunc {
 
 		// クエリ取得
 		query := request.URL.Query()
-		if len(query["start"]) != 1 {
+		if len(query) != 1 {
 			myErr := myerror.NewMyErr(
-				fmt.Errorf("the length of query must be one"),
-				http.StatusInternalServerError,
+				fmt.Errorf("invalid query. the length of query must be one"),
+				http.StatusBadRequest,
 			)
 			return myErr
 		}

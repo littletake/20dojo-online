@@ -5,9 +5,11 @@
 package mock_gacha
 
 import (
+	user "20dojo-online/pkg/server/domain/model/user"
 	usercollectionitem "20dojo-online/pkg/server/domain/model/usercollectionitem"
 	myerror "20dojo-online/pkg/server/interface/myerror"
 	gacha "20dojo-online/pkg/server/usecase/gacha"
+	sql "database/sql"
 	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
 )
@@ -105,4 +107,18 @@ func (m *MockGachaUseCase) CreateGachaResults(gettingItemSlice []string, hasGotI
 func (mr *MockGachaUseCaseMockRecorder) CreateGachaResults(gettingItemSlice, hasGotItemMap, userID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateGachaResults", reflect.TypeOf((*MockGachaUseCase)(nil).CreateGachaResults), gettingItemSlice, hasGotItemMap, userID)
+}
+
+// BulkInsertAndUpdate mocks base method
+func (m *MockGachaUseCase) BulkInsertAndUpdate(newItemSlice []*usercollectionitem.UserCollectionItem, user *user.UserL, tx *sql.Tx) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BulkInsertAndUpdate", newItemSlice, user, tx)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// BulkInsertAndUpdate indicates an expected call of BulkInsertAndUpdate
+func (mr *MockGachaUseCaseMockRecorder) BulkInsertAndUpdate(newItemSlice, user, tx interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BulkInsertAndUpdate", reflect.TypeOf((*MockGachaUseCase)(nil).BulkInsertAndUpdate), newItemSlice, user, tx)
 }
