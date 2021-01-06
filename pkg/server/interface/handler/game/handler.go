@@ -29,17 +29,19 @@ func NewGameHandler(gu usecase.GameUseCase) GameHandler {
 	}
 }
 
+// GameFinishRequest ゲーム終了request
+type GameFinishRequest struct {
+	Score int32 `json:"score"`
+}
+
+// GameFinishResponse ゲーム終了response
+type GameFinishResponse struct {
+	Coin int32 `json:"coin"`
+}
+
 // HandleGameFinish インゲーム終了処理
 func (gh *gameHandler) HandleGameFinish() middleware.MyHandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) *myerror.MyErr {
-		// GameFinishRequest ゲーム終了request
-		type GameFinishRequest struct {
-			Score int32 `json:"score"`
-		}
-		// GameFinishResponse ゲーム終了response
-		type GameFinishResponse struct {
-			Coin int32 `json:"coin"`
-		}
 
 		// コンテキストからuserID取得
 		ctx := request.Context()

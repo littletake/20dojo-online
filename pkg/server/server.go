@@ -5,6 +5,10 @@ import (
 	"net/http"
 	"time"
 
+	"20dojo-online/pkg/server/infra/db"
+
+	"github.com/google/uuid"
+
 	cp "20dojo-online/pkg/server/infra/persistence/collectionitem"
 	gp "20dojo-online/pkg/server/infra/persistence/gachaprobability"
 	tp "20dojo-online/pkg/server/infra/persistence/transaction"
@@ -27,13 +31,13 @@ import (
 // Serve HTTPサーバを起動する
 func Serve(addr string) {
 	// レイヤードアーキテクチャ
-	userPersistence := up.NewPersistence()
-	cItemPersistence := cp.NewPersistence()
-	ucItemPersistence := ucp.NewPersistence()
-	gachaProbPersistence := gp.NewPersistence()
-	txPersistence := tp.NewPersistence()
+	userPersistence := up.NewPersistence(db.Conn)
+	cItemPersistence := cp.NewPersistence(db.Conn)
+	ucItemPersistence := ucp.NewPersistence(db.Conn)
+	gachaProbPersistence := gp.NewPersistence(db.Conn)
+	txPersistence := tp.NewPersistence(db.Conn)
 
-	userUseCase := uu.NewUserUseCase(userPersistence)
+	userUseCase := uu.NewUserUseCase(userPersistence, uuid.NewRandom)
 	gameUseCase := gu.NewGameUseCase(userPersistence)
 	rankingUseCase := ru.NewRankingUseCase(userPersistence)
 	gachaUseCase := gcu.NewGachaUseCase(userPersistence,

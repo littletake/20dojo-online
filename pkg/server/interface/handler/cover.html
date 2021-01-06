@@ -1,0 +1,624 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>collection: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">20dojo-online/pkg/server/interface/handler/collection/handler.go (100.0%)</option>
+				
+				<option value="file1">20dojo-online/pkg/server/interface/handler/gacha/handler.go (100.0%)</option>
+				
+				<option value="file2">20dojo-online/pkg/server/interface/handler/game/handler.go (100.0%)</option>
+				
+				<option value="file3">20dojo-online/pkg/server/interface/handler/ranking/handler.go (100.0%)</option>
+				
+				<option value="file4">20dojo-online/pkg/server/interface/handler/setting/handler.go (100.0%)</option>
+				
+				<option value="file5">20dojo-online/pkg/server/interface/handler/user/handler.go (100.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package collection
+
+import (
+        "fmt"
+        "net/http"
+
+        "20dojo-online/pkg/dcontext"
+        "20dojo-online/pkg/server/interface/middleware"
+        "20dojo-online/pkg/server/interface/myerror"
+        "20dojo-online/pkg/server/interface/response"
+        usecase "20dojo-online/pkg/server/usecase/collection"
+)
+
+// CollectionHandler Handlerのインターフェース
+type CollectionHandler interface {
+        HandleCollectionList() middleware.MyHandlerFunc
+}
+
+// collectionHandler usecaseとhandlerをつなぐもの
+type collectionHandler struct {
+        collectionUseCase usecase.CollectionUseCase
+}
+
+// NewCollectionHandler Userデータに関するHandler
+func NewCollectionHandler(cu usecase.CollectionUseCase) CollectionHandler <span class="cov8" title="1">{
+        return &amp;collectionHandler{
+                collectionUseCase: cu,
+        }
+}</span>
+
+// HandleCollectionList ガチャ実行
+func (ch *collectionHandler) HandleCollectionList() middleware.MyHandlerFunc <span class="cov8" title="1">{
+        return func(writer http.ResponseWriter, request *http.Request) *myerror.MyErr </span><span class="cov8" title="1">{
+                // collectionListResponse レスポンス形式
+                type collectionListResponse struct {
+                        Collections []*usecase.CollectionItemResult `json:"collections"`
+                }
+
+                // コンテキストからuserID取得
+                ctx := request.Context()
+                userID := dcontext.GetUserIDFromContext(ctx)
+                if userID == "" </span><span class="cov8" title="1">{
+                        myErr := myerror.NewMyErr(
+                                fmt.Errorf("userID is empty"),
+                                http.StatusInternalServerError,
+                        )
+                        return myErr
+                }</span>
+                // 結果を取得
+                <span class="cov8" title="1">collectionList, myErr := ch.collectionUseCase.GetCollectionSlice(userID)
+                if myErr != nil </span><span class="cov8" title="1">{
+                        return myErr
+                }</span>
+                <span class="cov8" title="1">response.Success(writer, &amp;collectionListResponse{
+                        Collections: collectionList,
+                })
+                return myErr</span>
+
+        }
+}
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package gacha
+
+import (
+        "encoding/json"
+        "fmt"
+        "net/http"
+
+        "20dojo-online/pkg/constant"
+        "20dojo-online/pkg/dcontext"
+        "20dojo-online/pkg/server/interface/middleware"
+        "20dojo-online/pkg/server/interface/myerror"
+        "20dojo-online/pkg/server/interface/response"
+        usecase "20dojo-online/pkg/server/usecase/gacha"
+)
+
+// GachaHandler UserにおけるHandlerのインターフェース
+type GachaHandler interface {
+        HandleGachaDraw() middleware.MyHandlerFunc
+}
+
+// gachaHandler usecaseとhandlerをつなぐもの
+type gachaHandler struct {
+        gachaUseCase usecase.GachaUseCase
+}
+
+// NewGachaHandler Handlerを生成
+func NewGachaHandler(gu usecase.GachaUseCase) GachaHandler <span class="cov8" title="1">{
+        return &amp;gachaHandler{
+                gachaUseCase: gu,
+        }
+}</span>
+
+// GachaDrawRequest リクエスト形式
+type GachaDrawRequest struct {
+        Times int32 `json:"times"`
+}
+
+// GachaDrawResponse レスポンス形式
+type GachaDrawResponse struct {
+        Results []*usecase.GachaResult `json:"results"`
+}
+
+// HandleGachaDraw ガチャ実行
+func (gh *gachaHandler) HandleGachaDraw() middleware.MyHandlerFunc <span class="cov8" title="1">{
+        return func(writer http.ResponseWriter, request *http.Request) *myerror.MyErr </span><span class="cov8" title="1">{
+                // リクエストBodyから更新情報を取得
+                var requestBody GachaDrawRequest
+                if err := json.NewDecoder(request.Body).Decode(&amp;requestBody); err != nil </span><span class="cov8" title="1">{
+                        myErr := myerror.NewMyErr(
+                                err,
+                                http.StatusInternalServerError,
+                        )
+                        return myErr
+                }</span>
+                // gachaTimes ガチャの回数
+                <span class="cov8" title="1">gachaTimes := requestBody.Times
+                if gachaTimes != constant.MinGachaTimes &amp;&amp; gachaTimes != constant.MaxGachaTimes </span><span class="cov8" title="1">{
+                        myErr := myerror.NewMyErr(
+                                fmt.Errorf("requestBody'times' must be 1 or 10. times=%d", gachaTimes),
+                                http.StatusBadRequest,
+                        )
+                        return myErr
+                }</span>
+                // コンテキストからuserID取得
+                <span class="cov8" title="1">ctx := request.Context()
+                userID := dcontext.GetUserIDFromContext(ctx)
+                if userID == "" </span><span class="cov8" title="1">{
+                        myErr := myerror.NewMyErr(
+                                fmt.Errorf("userID is empty"),
+                                http.StatusInternalServerError,
+                        )
+                        return myErr
+                }</span>
+                // 結果を取得
+                <span class="cov8" title="1">gachaResultSlice, myErr := gh.gachaUseCase.Gacha(gachaTimes, userID)
+                if myErr != nil </span><span class="cov8" title="1">{
+                        return myErr
+                }</span>
+                <span class="cov8" title="1">response.Success(writer, &amp;GachaDrawResponse{
+                        Results: gachaResultSlice,
+                })
+                return nil</span>
+        }
+}
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package game
+
+import (
+        "encoding/json"
+        "fmt"
+        "net/http"
+
+        "20dojo-online/pkg/dcontext"
+        "20dojo-online/pkg/server/interface/middleware"
+        "20dojo-online/pkg/server/interface/myerror"
+        "20dojo-online/pkg/server/interface/response"
+        usecase "20dojo-online/pkg/server/usecase/game"
+)
+
+// GameHandler gameにおけるHandler
+type GameHandler interface {
+        HandleGameFinish() middleware.MyHandlerFunc
+}
+
+// gameHandler usecaseとhandlerをつなぐもの
+type gameHandler struct {
+        gameUseCase usecase.GameUseCase
+}
+
+// NewGameHandler Handlerを生成
+func NewGameHandler(gu usecase.GameUseCase) GameHandler <span class="cov8" title="1">{
+        return &amp;gameHandler{
+                gameUseCase: gu,
+        }
+}</span>
+
+// GameFinishRequest ゲーム終了request
+type GameFinishRequest struct {
+        Score int32 `json:"score"`
+}
+
+// GameFinishResponse ゲーム終了response
+type GameFinishResponse struct {
+        Coin int32 `json:"coin"`
+}
+
+// HandleGameFinish インゲーム終了処理
+func (gh *gameHandler) HandleGameFinish() middleware.MyHandlerFunc <span class="cov8" title="1">{
+        return func(writer http.ResponseWriter, request *http.Request) *myerror.MyErr </span><span class="cov8" title="1">{
+
+                // コンテキストからuserID取得
+                ctx := request.Context()
+                userID := dcontext.GetUserIDFromContext(ctx)
+                if userID == "" </span><span class="cov8" title="1">{
+                        myErr := myerror.NewMyErr(
+                                fmt.Errorf("userID is empty"),
+                                http.StatusInternalServerError,
+                        )
+                        return myErr
+                }</span>
+                // リクエストBodyから更新後情報を取得
+                <span class="cov8" title="1">var requestBody GameFinishRequest
+                if err := json.NewDecoder(request.Body).Decode(&amp;requestBody); err != nil </span><span class="cov8" title="1">{
+                        myErr := myerror.NewMyErr(
+                                err,
+                                http.StatusInternalServerError,
+                        )
+                        return myErr
+                }</span>
+                // coinとscoreを更新
+                <span class="cov8" title="1">coin, myErr := gh.gameUseCase.UpdateCoinAndHighScore(userID, requestBody.Score)
+                if myErr != nil </span><span class="cov8" title="1">{
+                        return myErr
+                }</span>
+                // レスポンスに必要な情報を詰めて返却
+                <span class="cov8" title="1">response.Success(writer, &amp;GameFinishResponse{
+                        Coin: coin,
+                })
+                return nil</span>
+        }
+}
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">package ranking
+
+import (
+        "fmt"
+        "net/http"
+        "strconv"
+
+        "20dojo-online/pkg/server/interface/middleware"
+        "20dojo-online/pkg/server/interface/myerror"
+        "20dojo-online/pkg/server/interface/response"
+        usecase "20dojo-online/pkg/server/usecase/ranking"
+)
+
+// RankingHandler UserにおけるHandlerのインターフェース
+type RankingHandler interface {
+        HandleRankingList() middleware.MyHandlerFunc
+}
+
+// rankingHandler usecaseとhandlerをつなぐもの
+type rankingHandler struct {
+        rankingUseCase usecase.RankingUseCase
+}
+
+// NewRankingHandler Handlerを生成
+func NewRankingHandler(ru usecase.RankingUseCase) RankingHandler <span class="cov8" title="1">{
+        return &amp;rankingHandler{
+                rankingUseCase: ru,
+        }
+}</span>
+
+// HandleRankingList ランキング取得
+func (rh *rankingHandler) HandleRankingList() middleware.MyHandlerFunc <span class="cov8" title="1">{
+        return func(writer http.ResponseWriter, request *http.Request) *myerror.MyErr </span><span class="cov8" title="1">{
+                // rankInfo ランキング情報
+                type rankInfo struct {
+                        UserID   string `json:"userId"`
+                        UserName string `json:"userName"`
+                        Rank     int32  `json:"rank"`
+                        Score    int32  `json:"score"`
+                }
+
+                // RankingListResponse レスポンス形式
+                type rankingListResponse struct {
+                        Ranks []rankInfo `json:"ranks"`
+                }
+
+                // クエリ取得
+                query := request.URL.Query()
+                if len(query) != 1 </span><span class="cov8" title="1">{
+                        myErr := myerror.NewMyErr(
+                                fmt.Errorf("invalid query. the length of query must be one"),
+                                http.StatusBadRequest,
+                        )
+                        return myErr
+                }</span>
+                <span class="cov8" title="1">startNum, err := strconv.Atoi(query["start"][0])
+                if err != nil </span><span class="cov8" title="1">{
+                        myErr := myerror.NewMyErr(
+                                err,
+                                http.StatusInternalServerError,
+                        )
+                        return myErr
+                }</span>
+                <span class="cov8" title="1">if startNum &lt;= 0 </span><span class="cov8" title="1">{
+                        myErr := myerror.NewMyErr(
+                                fmt.Errorf("query'start' must be positive"),
+                                http.StatusBadRequest,
+                        )
+                        return myErr
+                }</span>
+                // 対象範囲のユーザのスライス取得
+                <span class="cov8" title="1">users, myErr := rh.rankingUseCase.GetUsersByHighScore(int32(startNum))
+                if myErr != nil </span><span class="cov8" title="1">{
+                        return myErr
+                }</span>
+                <span class="cov8" title="1">rankingList := make([]rankInfo, len(users), len(users))
+                for i, user := range users </span><span class="cov8" title="1">{
+                        rankingList[i] = rankInfo{
+                                UserID:   user.ID,
+                                UserName: user.Name,
+                                Rank:     int32(startNum + i),
+                                Score:    user.HighScore,
+                        }
+                }</span>
+
+                <span class="cov8" title="1">response.Success(writer, &amp;rankingListResponse{
+                        Ranks: rankingList,
+                })
+                return nil</span>
+        }
+}
+</pre>
+		
+		<pre class="file" id="file4" style="display: none">package setting
+
+import (
+        "net/http"
+
+        "20dojo-online/pkg/constant"
+        m "20dojo-online/pkg/server/interface/middleware"
+        "20dojo-online/pkg/server/interface/myerror"
+        "20dojo-online/pkg/server/interface/response"
+)
+
+// TODO: swaggerのdocに反映
+
+// SettingHandler インターフェース　handlerのメソッド一覧
+type SettingHandler interface {
+        HandleSettingGet() m.MyHandlerFunc
+}
+
+type settingHandler struct {
+}
+
+// NewSettingHandler Handler
+func NewSettingHandler() SettingHandler <span class="cov8" title="1">{
+        return &amp;settingHandler{}
+}</span>
+
+// HandleSettingGet ゲーム設定情報取得処理
+func (sh *settingHandler) HandleSettingGet() m.MyHandlerFunc <span class="cov8" title="1">{
+        return func(writer http.ResponseWriter, request *http.Request) *myerror.MyErr </span><span class="cov8" title="1">{
+                // settingGetResponse レスポンス形式
+                type settingGetResponse struct {
+                        GachaCoinConsumption int32 `json:"gachaCoinConsumption"`
+                        RankingListNumber    int32 `json:"rankingListNumber"`
+                        MaxGachaTimes        int32 `json:"maxGachaTimes"`
+                        MinGachaTimes        int32 `json:"minGachaTimes"`
+                }
+
+                response.Success(writer, &amp;settingGetResponse{
+                        GachaCoinConsumption: constant.GachaCoinConsumption,
+                        RankingListNumber:    constant.RankingListNumber,
+                        MaxGachaTimes:        constant.MaxGachaTimes,
+                        MinGachaTimes:        constant.MinGachaTimes,
+                })
+                // myErr := myerror.NewMyErr(errors.New("testtesttest"), int32(500))
+                // return myErr
+                return nil
+        }</span>
+}
+</pre>
+		
+		<pre class="file" id="file5" style="display: none">package user
+
+import (
+        "encoding/json"
+        "fmt"
+        "net/http"
+
+        "20dojo-online/pkg/dcontext"
+        "20dojo-online/pkg/server/interface/middleware"
+        "20dojo-online/pkg/server/interface/myerror"
+        "20dojo-online/pkg/server/interface/response"
+        usecase "20dojo-online/pkg/server/usecase/user"
+)
+
+// UserHandler UserにおけるHandlerのインターフェース
+type UserHandler interface {
+        HandleUserGet() middleware.MyHandlerFunc
+        HandleUserCreate() middleware.MyHandlerFunc
+        HandleUserUpdate() middleware.MyHandlerFunc
+}
+
+// userHandler usecaseとhandlerをつなぐもの
+type userHandler struct {
+        userUseCase usecase.UserUseCase
+}
+
+// NewUserHandler Handlerを生成する関数
+func NewUserHandler(uu usecase.UserUseCase) UserHandler <span class="cov8" title="1">{
+        return &amp;userHandler{
+                userUseCase: uu,
+        }
+}</span>
+
+// UserCreateRequest ユーザ作成request
+type UserCreateRequest struct {
+        Name string `json:"name"`
+}
+
+// UserCreateResponse ユーザ作成response
+type UserCreateResponse struct {
+        Token string `json:"token"`
+}
+
+// HandleUserGet ユーザ情報取得
+func (uh *userHandler) HandleUserGet() middleware.MyHandlerFunc <span class="cov8" title="1">{
+        return func(writer http.ResponseWriter, request *http.Request) *myerror.MyErr </span><span class="cov8" title="1">{
+                // userGetResponse ユーザ取得response
+                type userGetResponse struct {
+                        ID        string `json:"id"`
+                        Name      string `json:"name"`
+                        HighScore int32  `json:"highScore"`
+                        Coin      int32  `json:"coin"`
+                }
+
+                // コンテキストからuserID取得
+                ctx := request.Context()
+                userID := dcontext.GetUserIDFromContext(ctx)
+                if userID == "" </span><span class="cov8" title="1">{
+                        myErr := myerror.NewMyErr(
+                                fmt.Errorf("userID is empty"),
+                                http.StatusInternalServerError,
+                        )
+                        return myErr
+                }</span>
+                // ユーザ取得
+                <span class="cov8" title="1">user, myErr := uh.userUseCase.GetUserByUserID(userID)
+                if myErr != nil </span><span class="cov8" title="1">{
+                        return myErr
+                }</span>
+                // レスポンス
+                <span class="cov8" title="1">response.Success(writer, &amp;userGetResponse{
+                        ID:        user.ID,
+                        Name:      user.Name,
+                        HighScore: user.HighScore,
+                        Coin:      user.Coin,
+                })
+                return nil</span>
+        }
+}
+
+// HandleUserCreate　ユーザ作成
+func (uh *userHandler) HandleUserCreate() middleware.MyHandlerFunc <span class="cov8" title="1">{
+        return func(writer http.ResponseWriter, request *http.Request) *myerror.MyErr </span><span class="cov8" title="1">{
+                // リクエストBodyから更新情報を取得
+                var requestBody UserCreateRequest
+                if err := json.NewDecoder(request.Body).Decode(&amp;requestBody); err != nil </span><span class="cov8" title="1">{
+                        myErr := myerror.NewMyErr(
+                                err,
+                                http.StatusInternalServerError,
+                        )
+                        return myErr
+                }</span>
+
+                <span class="cov8" title="1">authToken, myErr := uh.userUseCase.RegisterUserFromUserName(requestBody.Name)
+                if myErr != nil </span><span class="cov8" title="1">{
+                        return myErr
+                }</span>
+                // 生成した認証トークンを返却
+                <span class="cov8" title="1">response.Success(writer, &amp;UserCreateResponse{
+                        Token: authToken,
+                })
+                return nil</span>
+        }
+}
+
+// UserUpdateRequest ユーザ更新request
+type UserUpdateRequest struct {
+        Name string `json:"name"`
+}
+
+// HandleUserUpdate　ユーザ情報更新
+func (uh *userHandler) HandleUserUpdate() middleware.MyHandlerFunc <span class="cov8" title="1">{
+        return func(writer http.ResponseWriter, request *http.Request) *myerror.MyErr </span><span class="cov8" title="1">{
+
+                // コンテキストからuserID取得
+                ctx := request.Context()
+                userID := dcontext.GetUserIDFromContext(ctx)
+                if userID == "" </span><span class="cov8" title="1">{
+                        myErr := myerror.NewMyErr(
+                                fmt.Errorf("userID is empty"),
+                                http.StatusInternalServerError,
+                        )
+                        return myErr
+                }</span>
+                // requestBodyから更新情報を取得
+                <span class="cov8" title="1">var requestBody UserUpdateRequest
+                if err := json.NewDecoder(request.Body).Decode(&amp;requestBody); err != nil </span><span class="cov8" title="1">{
+                        myErr := myerror.NewMyErr(
+                                err,
+                                http.StatusInternalServerError,
+                        )
+                        return myErr
+                }</span>
+                // userNameを更新
+                <span class="cov8" title="1">_, myErr := uh.userUseCase.UpdateUserName(userID, requestBody.Name)
+                if myErr != nil </span><span class="cov8" title="1">{
+                        return myErr
+                }</span>
+                <span class="cov8" title="1">response.Success(writer, nil)
+                return nil</span>
+        }
+}
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>

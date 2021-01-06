@@ -30,21 +30,21 @@ func NewGachaHandler(gu usecase.GachaUseCase) GachaHandler {
 	}
 }
 
+// GachaDrawRequest リクエスト形式
+type GachaDrawRequest struct {
+	Times int32 `json:"times"`
+}
+
+// GachaDrawResponse レスポンス形式
+type GachaDrawResponse struct {
+	Results []*usecase.GachaResult `json:"results"`
+}
+
 // HandleGachaDraw ガチャ実行
 func (gh *gachaHandler) HandleGachaDraw() middleware.MyHandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) *myerror.MyErr {
-		// gachaDrawRequest リクエスト形式
-		type gachaDrawRequest struct {
-			Times int32 `json:"times"`
-		}
-
-		// gachaDrawResponse レスポンス形式
-		type gachaDrawResponse struct {
-			Results []*usecase.GachaResult `json:"results"`
-		}
-
 		// リクエストBodyから更新情報を取得
-		var requestBody gachaDrawRequest
+		var requestBody GachaDrawRequest
 		if err := json.NewDecoder(request.Body).Decode(&requestBody); err != nil {
 			myErr := myerror.NewMyErr(
 				err,
@@ -76,7 +76,7 @@ func (gh *gachaHandler) HandleGachaDraw() middleware.MyHandlerFunc {
 		if myErr != nil {
 			return myErr
 		}
-		response.Success(writer, &gachaDrawResponse{
+		response.Success(writer, &GachaDrawResponse{
 			Results: gachaResultSlice,
 		})
 		return nil

@@ -12,8 +12,10 @@ type txPersistence struct {
 }
 
 // NewPersistence Tx に関するPersistenceを生成
-func NewPersistence() repository.TxRepo {
-	return &txPersistence{}
+func NewPersistence(db *sql.DB) repository.TxRepo {
+	return &txPersistence{
+		db: db,
+	}
 }
 
 // Transaction トランザクション処理
@@ -45,6 +47,7 @@ func (tp txPersistence) Transaction(function func(tx *sql.Tx) error) error {
 		if rollbackErr := tx.Rollback(); rollbackErr != nil {
 			log.Println("failed to Rollback")
 			log.Println(rollbackErr)
+			TODO: functionのエラーとrollbackのエラーの両方を返すこと！
 			return rollbackErr
 		}
 		return err
