@@ -1,0 +1,22 @@
+{
+  "ranks": [
+    {
+      "userId": "example_id",
+      "userName": "example_name",
+      "rank": 1,
+      "score": 100
+    },
+    {
+      "userId": "example_id",
+      "userName": "example_name",
+      "rank": 2,
+      "score": 10
+    },
+    {
+      "userId": "example_id",
+      "userName": "example_name",
+      "rank": 3,
+      "score": 1
+    }
+  ]
+}
