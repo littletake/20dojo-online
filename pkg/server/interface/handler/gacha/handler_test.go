@@ -15,8 +15,8 @@ import (
 	"20dojo-online/pkg/server/interface/middleware"
 	"20dojo-online/pkg/server/interface/myerror"
 	usecase "20dojo-online/pkg/server/usecase/gacha"
-	"20dojo-online/pkg/server/usecase/gacha/mock_gacha"
-	"20dojo-online/pkg/server/usecase/user/mock_user"
+	"20dojo-online/pkg/server/usecase/mock/mock_gacha"
+	"20dojo-online/pkg/server/usecase/mock/mock_user"
 	"20dojo-online/pkg/test"
 )
 

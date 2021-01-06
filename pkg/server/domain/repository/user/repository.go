@@ -1,4 +1,4 @@
-//go:generate mockgen -source=$GOFILE -destination=./mock_$GOPACKAGE/$GOFILE -package=mock_$GOPACKAGE
+//go:generate mockgen -source=$GOFILE -destination=../mock/mock_$GOPACKAGE/$GOFILE -package=mock_$GOPACKAGE
 
 package user
 

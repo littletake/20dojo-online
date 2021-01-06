@@ -14,8 +14,8 @@ import (
 	model "20dojo-online/pkg/server/domain/model/user"
 	"20dojo-online/pkg/server/interface/middleware"
 	"20dojo-online/pkg/server/interface/myerror"
-	"20dojo-online/pkg/server/usecase/game/mock_game"
-	"20dojo-online/pkg/server/usecase/user/mock_user"
+	"20dojo-online/pkg/server/usecase/mock/mock_game"
+	"20dojo-online/pkg/server/usecase/mock/mock_user"
 	"20dojo-online/pkg/test"
 )
 

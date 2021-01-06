@@ -13,11 +13,11 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	ucm "20dojo-online/pkg/server/domain/model/usercollectionitem"
-	"20dojo-online/pkg/server/domain/repository/collectionitem/mock_collectionitem"
-	"20dojo-online/pkg/server/domain/repository/gachaprobability/mock_gachaprobability"
-	"20dojo-online/pkg/server/domain/repository/transaction/mock_transaction"
-	"20dojo-online/pkg/server/domain/repository/user/mock_user"
-	"20dojo-online/pkg/server/domain/repository/usercollectionitem/mock_usercollectionitem"
+	"20dojo-online/pkg/server/domain/repository/mock/mock_collectionitem"
+	"20dojo-online/pkg/server/domain/repository/mock/mock_gachaprobability"
+	"20dojo-online/pkg/server/domain/repository/mock/mock_transaction"
+	"20dojo-online/pkg/server/domain/repository/mock/mock_user"
+	"20dojo-online/pkg/server/domain/repository/mock/mock_usercollectionitem"
 	"20dojo-online/pkg/server/interface/myerror"
 )
 

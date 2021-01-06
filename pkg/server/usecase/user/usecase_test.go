@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	model "20dojo-online/pkg/server/domain/model/user"
-	"20dojo-online/pkg/server/domain/repository/user/mock_user"
+	"20dojo-online/pkg/server/domain/repository/mock/mock_user"
 	"20dojo-online/pkg/server/interface/myerror"
 )
 

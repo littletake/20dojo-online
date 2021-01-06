@@ -12,9 +12,9 @@ import (
 	cm "20dojo-online/pkg/server/domain/model/collectionitem"
 	um "20dojo-online/pkg/server/domain/model/user"
 	ucm "20dojo-online/pkg/server/domain/model/usercollectionitem"
-	"20dojo-online/pkg/server/domain/repository/collectionitem/mock_collectionitem"
-	"20dojo-online/pkg/server/domain/repository/user/mock_user"
-	"20dojo-online/pkg/server/domain/repository/usercollectionitem/mock_usercollectionitem"
+	"20dojo-online/pkg/server/domain/repository/mock/mock_collectionitem"
+	"20dojo-online/pkg/server/domain/repository/mock/mock_user"
+	"20dojo-online/pkg/server/domain/repository/mock/mock_usercollectionitem"
 	"20dojo-online/pkg/server/interface/myerror"
 )
 

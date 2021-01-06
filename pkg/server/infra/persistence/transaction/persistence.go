@@ -47,6 +47,7 @@ func (tp txPersistence) Transaction(function func(tx *sql.Tx) error) error {
 		if rollbackErr := tx.Rollback(); rollbackErr != nil {
 			log.Println("failed to Rollback")
 			log.Println(rollbackErr)
+			TODO: functionのエラーとrollbackのエラーの両方を返すこと！
 			return rollbackErr
 		}
 		return err
