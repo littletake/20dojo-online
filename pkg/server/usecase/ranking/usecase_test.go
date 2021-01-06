@@ -6,13 +6,13 @@ import (
 	"net/http"
 	"testing"
 
-	"20dojo-online/pkg/constant"
-	model "20dojo-online/pkg/server/domain/model/user"
-	"20dojo-online/pkg/server/domain/repository/user/mock_user"
-	"20dojo-online/pkg/server/interface/myerror"
-
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+
+	"20dojo-online/pkg/constant"
+	model "20dojo-online/pkg/server/domain/model/user"
+	"20dojo-online/pkg/server/domain/repository/mock/mock_user"
+	"20dojo-online/pkg/server/interface/myerror"
 )
 
 var exampleUser = &model.UserL{

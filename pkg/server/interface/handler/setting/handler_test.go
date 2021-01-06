@@ -8,7 +8,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"20dojo-online/pkg/server/interface/middleware"
-	"20dojo-online/pkg/server/usecase/user/mock_user"
+	"20dojo-online/pkg/server/usecase/mock/mock_user"
 	"20dojo-online/pkg/test"
 )
 

@@ -7,14 +7,13 @@ import (
 	"strconv"
 	"testing"
 
-	"20dojo-online/pkg/server/usecase/ranking/mock_ranking"
-
 	"github.com/golang/mock/gomock"
 
 	model "20dojo-online/pkg/server/domain/model/user"
 	"20dojo-online/pkg/server/interface/middleware"
 	"20dojo-online/pkg/server/interface/myerror"
-	"20dojo-online/pkg/server/usecase/user/mock_user"
+	"20dojo-online/pkg/server/usecase/mock/mock_ranking"
+	"20dojo-online/pkg/server/usecase/mock/mock_user"
 	"20dojo-online/pkg/test"
 )
 

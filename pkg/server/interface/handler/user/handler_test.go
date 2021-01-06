@@ -8,14 +8,13 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
 	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 
 	model "20dojo-online/pkg/server/domain/model/user"
 	"20dojo-online/pkg/server/interface/middleware"
 	"20dojo-online/pkg/server/interface/myerror"
-	"20dojo-online/pkg/server/usecase/user/mock_user"
+	"20dojo-online/pkg/server/usecase/mock/mock_user"
 	"20dojo-online/pkg/test"
 )
 
